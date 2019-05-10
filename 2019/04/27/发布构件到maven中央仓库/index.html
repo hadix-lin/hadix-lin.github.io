@@ -96,22 +96,22 @@
 
 
 
-  <meta name="description" content="发布构件到maven中央仓库引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不">
+  <meta name="description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
 <meta name="keywords" content="tutorial">
 <meta property="og:type" content="article">
 <meta property="og:title" content="发布构件到maven中央仓库">
 <meta property="og:url" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/index.html">
 <meta property="og:site_name" content="hadix&#39; Blog">
-<meta property="og:description" content="发布构件到maven中央仓库引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不">
+<meta property="og:description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190423002605866.png">
 <meta property="og:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190423003718569.png">
 <meta property="og:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190424225424590.png">
 <meta property="og:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190427204606484.png">
-<meta property="og:updated_time" content="2019-04-27T13:07:15.039Z">
+<meta property="og:updated_time" content="2019-04-27T13:31:29.619Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="发布构件到maven中央仓库">
-<meta name="twitter:description" content="发布构件到maven中央仓库引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不">
+<meta name="twitter:description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
 <meta name="twitter:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190423002605866.png">
 
 
@@ -338,7 +338,7 @@
                 
               
 
-              <time title="Created: 2019-04-27 20:50:44 / Modified: 21:07:15" itemprop="dateCreated datePublished" datetime="2019-04-27T20:50:44+08:00">2019-04-27</time>
+              <time title="Created: 2019-04-27 20:50:44 / Modified: 21:31:29" itemprop="dateCreated datePublished" datetime="2019-04-27T20:50:44+08:00">2019-04-27</time>
             
 
             
@@ -384,7 +384,7 @@
       
 
       
-        <h1 id="发布构件到maven中央仓库"><a href="#发布构件到maven中央仓库" class="headerlink" title="发布构件到maven中央仓库"></a>发布构件到maven中央仓库</h1><h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布<a href="https://github.com/hadix-lin/springfox-plus" target="_blank" rel="noopener">springfox-plus</a>项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考.</p>
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布<a href="https://github.com/hadix-lin/springfox-plus" target="_blank" rel="noopener">springfox-plus</a>项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考.</p>
 <p>可能您使用过公司的maven仓库,按照公司的流程,可以很容通过<code>maven deploy</code>将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将构件发布到授信的第三方仓库,经过审核后才能同步到中央仓库.</p>
 <p>本文选择的第三方仓库是<a href="https://central.sonatype.org/" target="_blank" rel="noopener">sonatype</a>.它也是中央仓库的管理者.英文好的朋友可以自行到它的网站上去看详尽的<a href="https://central.sonatype.org/pages/producers.html" target="_blank" rel="noopener">发布说明</a>.本文涵盖的内容除了基本的发布方法外,还包含我遇到的麻烦的解决方法.所以依然对您有参考价值.</p>
 <h2 id="STEP1-注册Sonatype的JIRA帐户并发布ISSUE"><a href="#STEP1-注册Sonatype的JIRA帐户并发布ISSUE" class="headerlink" title="STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE"></a>STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</h2><ol>
@@ -486,8 +486,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/04/23/Code-Smell/Iteration/" rel="next" title="Code Smell : Iteration : 迭代">
-                <i class="fa fa-chevron-left"></i> Code Smell : Iteration : 迭代
+              <a href="/2019/04/23/Code-Smell/Multi-Responsibility-Methods/" rel="next" title="Code Smells: Multi-Responsibility Methods : 多职责方法">
+                <i class="fa fa-chevron-left"></i> Code Smells: Multi-Responsibility Methods : 多职责方法
               </a>
             
           </div>
@@ -495,6 +495,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/10/改善编程体验-IdeaVimExtension介绍/" rel="prev" title="改善编程体验: IdeaVimExtension介绍">
+                改善编程体验: IdeaVimExtension介绍 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -563,7 +567,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-count">9</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -582,7 +586,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">2</span>
+                      
+                    
+                    <span class="site-state-item-count">3</span>
                     <span class="site-state-item-name">tags</span>
                   
                 </div>
@@ -635,7 +641,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#发布构件到maven中央仓库"><span class="nav-number">1.</span> <span class="nav-text">发布构件到maven中央仓库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP1-注册Sonatype的JIRA帐户并发布ISSUE"><span class="nav-number">1.2.</span> <span class="nav-text">STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SETP2-配置您的POM-令您的项目满足先决条件"><span class="nav-number">1.3.</span> <span class="nav-text">SETP2 : 配置您的POM,令您的项目满足先决条件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#先决条件"><span class="nav-number">1.3.1.</span> <span class="nav-text">先决条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为满足上述条件-编写如下的pom文件"><span class="nav-number">1.3.2.</span> <span class="nav-text">为满足上述条件,编写如下的pom文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备GPG签名密钥"><span class="nav-number">1.3.3.</span> <span class="nav-text">准备GPG签名密钥</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP3-发布到sonatype仓库"><span class="nav-number">1.4.</span> <span class="nav-text">STEP3 : 发布到sonatype仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP4-回复ISSUE来发起同步"><span class="nav-number">1.5.</span> <span class="nav-text">STEP4 : 回复ISSUE来发起同步</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP1-注册Sonatype的JIRA帐户并发布ISSUE"><span class="nav-number">2.</span> <span class="nav-text">STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SETP2-配置您的POM-令您的项目满足先决条件"><span class="nav-number">3.</span> <span class="nav-text">SETP2 : 配置您的POM,令您的项目满足先决条件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#先决条件"><span class="nav-number">3.1.</span> <span class="nav-text">先决条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为满足上述条件-编写如下的pom文件"><span class="nav-number">3.2.</span> <span class="nav-text">为满足上述条件,编写如下的pom文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备GPG签名密钥"><span class="nav-number">3.3.</span> <span class="nav-text">准备GPG签名密钥</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP3-发布到sonatype仓库"><span class="nav-number">4.</span> <span class="nav-text">STEP3 : 发布到sonatype仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP4-回复ISSUE来发起同步"><span class="nav-number">5.</span> <span class="nav-text">STEP4 : 回复ISSUE来发起同步</span></a></li></ol></div>
             
 
           </div>

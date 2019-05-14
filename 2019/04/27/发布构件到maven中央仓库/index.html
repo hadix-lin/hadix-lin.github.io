@@ -104,15 +104,15 @@
 <meta property="og:site_name" content="hadix&#39; Blog">
 <meta property="og:description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190423002605866.png">
-<meta property="og:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190423003718569.png">
-<meta property="og:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190424225424590.png">
-<meta property="og:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190427204606484.png">
-<meta property="og:updated_time" content="2019-04-27T13:31:29.619Z">
+<meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png">
+<meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf170e63a672418.png">
+<meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf17248c0b82591.png">
+<meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf1737f70f93934.png">
+<meta property="og:updated_time" content="2019-05-14T16:51:18.761Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="发布构件到maven中央仓库">
 <meta name="twitter:description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
-<meta name="twitter:image" content="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/image-20190423002605866.png">
+<meta name="twitter:image" content="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png">
 
 
 
@@ -338,12 +338,24 @@
                 
               
 
-              <time title="Created: 2019-04-27 20:50:44 / Modified: 21:31:29" itemprop="dateCreated datePublished" datetime="2019-04-27T20:50:44+08:00">2019-04-27</time>
+              <time title="Created: 2019-04-27 20:50:00" itemprop="dateCreated datePublished" datetime="2019-04-27T20:50:00+08:00">2019-04-27</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-05-15 00:51:18" itemprop="dateModified" datetime="2019-05-15T00:51:18+08:00">2019-05-15</time>
               
             
           </span>
@@ -390,10 +402,10 @@
 <h2 id="STEP1-注册Sonatype的JIRA帐户并发布ISSUE"><a href="#STEP1-注册Sonatype的JIRA帐户并发布ISSUE" class="headerlink" title="STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE"></a>STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</h2><ol>
 <li><p>到<a href="https://issues.sonatype.org/secure/Signup!default.jspa" target="_blank" rel="noopener">sonatype的页面</a>注册一个账号.一个常规的简单表单,将邮箱,用户名,密码按要求填好即可.</p>
 <p>注册成功后,使用该账号进行登陆.可以看到如下的界面</p>
-<img src="/2019/04/27/发布构件到maven中央仓库/image-20190423002605866.png">
+<p><img src="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png" alt="image-20190423002605866"></p>
 </li>
 <li><p>按照上图说明,点击按钮后会弹出创建ISSUE的界面</p>
-<img src="/2019/04/27/发布构件到maven中央仓库/image-20190423003718569.png"> 
+<p><img src="https://i.loli.net/2019/05/15/5cdaf170e63a672418.png" alt="image-20190423003718569"> </p>
 <p>这个图里面的字段都是必填的,实际的界面还会多一些选填的内容.</p>
 <ul>
 <li>Summary : 项目的简介(一句话描述)</li>
@@ -406,7 +418,7 @@
 </ul>
 <p>界面上的其他选填内容,按需填写即可.</p>
 <p>ISSUE创建成功后进入如下图页面</p>
-<img src="/2019/04/27/发布构件到maven中央仓库/image-20190424225424590.png">
+<p><img src="https://i.loli.net/2019/05/15/5cdaf17248c0b82591.png" alt="image-20190424225424590"></p>
 <p>主要关注评论部分,如果之前表单填写的内容不规范,会在评论区里收到反馈,按要求编辑修改ISSUE即可.例如途中第一条评论告知我填写的groupId不和规范,并给了我建议的写法.</p>
 <p>ISSUE正确后,过一段时间会收到类似图中的第二条评论,告知您现在可以向仓库提交构件了.</p>
 </li>
@@ -447,7 +459,7 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[ERROR] Rule failure <span class="keyword">while</span> trying to close staging repository with ID <span class="string">"iogithubhadix-lin-1002"</span>.</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Nexus Staging Rules Failure Report</span><br><span class="line">[ERROR] ==================================</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Repository <span class="string">"iogithubhadix-lin-1002"</span> failures</span><br><span class="line">[ERROR]   Rule <span class="string">"pom-staging"</span> failures</span><br><span class="line">[ERROR]     * Invalid POM: /io/github/hadix-lin/http/1.0/http-1.0.pom: Project name missing, Project description missing, Project URL missing</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Cleaning up <span class="built_in">local</span> stage directory after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Deleting context ac894b84a446a7.properties</span><br><span class="line">[ERROR] Cleaning up remote stage repositories after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Dropping failed staging repository with ID <span class="string">"iogithubhadix-lin-1002"</span> (Rule failure during close of staging repositories: [iogithubhadix-lin-1002]).</span><br></pre></td></tr></table></figure>
 <p>按提示修改项目的pom文件即可.例如上面这段错误信息提示我的项目没有<code>Project name</code>.在pom中增加<code>&lt;name&gt;http&lt;/name&gt;</code>即可.</p>
 <h2 id="STEP4-回复ISSUE来发起同步"><a href="#STEP4-回复ISSUE来发起同步" class="headerlink" title="STEP4 : 回复ISSUE来发起同步"></a>STEP4 : 回复ISSUE来发起同步</h2><p>首次发布构件的时候,是不会自动同步到中央仓库的.当上面的步骤全部执行成功后,需要找到最初创建的ISSUE页面.在评论区用英文写一条评论,比如”the first release version(0.0.1) uploaded via maven”.然后耐心等待,会收到回复.像下面图中的样子.</p>
-<img src="/2019/04/27/发布构件到maven中央仓库/image-20190427204606484.png">
+<p><img src="https://i.loli.net/2019/05/15/5cdaf1737f70f93934.png" alt="image-20190427204606484"></p>
 <p>以后只要是同一个groupId的构件发布就不需要再来回复了.发布后过差不多两个小时就会自动同步到中央仓库.</p>
 <p>如果要发不不同groupId的构件,那么请重复STEP1中创建ISSUE的操作.</p>
 
@@ -567,7 +579,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-count">11</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -590,7 +602,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">tags</span>
                   
                 </div>

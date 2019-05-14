@@ -99,7 +99,7 @@
   <meta name="description" content="我的文章">
 <meta property="og:type" content="website">
 <meta property="og:title" content="hadix&#39; Blog">
-<meta property="og:url" content="http://yoursite.com/archives/2019/04/index.html">
+<meta property="og:url" content="http://yoursite.com/page/2/index.html">
 <meta property="og:site_name" content="hadix&#39; Blog">
 <meta property="og:description" content="我的文章">
 <meta property="og:locale" content="default">
@@ -113,7 +113,7 @@
 
   
   
-  <link rel="canonical" href="http://yoursite.com/archives/2019/04/">
+  <link rel="canonical" href="http://yoursite.com/page/2/">
 
 
 
@@ -123,7 +123,7 @@
   };
 </script>
 
-  <title>Archive | hadix' Blog</title>
+  <title>hadix' Blog</title>
   
 
 
@@ -171,7 +171,8 @@
     
   
 
-  <div class="container sidebar-position-left page-archive">
+  <div class="container sidebar-position-left 
+  page-home">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -226,7 +227,7 @@
         
         
           
-          <li class="menu-item menu-item-archives menu-item-active">
+          <li class="menu-item menu-item-archives">
 
     
     
@@ -268,335 +269,177 @@
           
             
 
-    
-    
-      
-      
-    
-      
-      
-    
-    
-
-  
-
-
           
           <div id="content" class="content">
             
+  <section id="posts" class="posts-expand">
+    
+      
+
+  
 
   
   
   
-  <div class="post-block archive">
-    <div id="posts" class="posts-collapse">
-      <span class="archive-move-on"></span>
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Code-Smell/Too-Many-Problems/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="hadix">
+      <meta itemprop="description" content="我的文章">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/23/Code-Smell/Too-Many-Problems/" class="post-title-link" itemprop="url">Code Smell : Too Many Problems : 太多的问题</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:33:25" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-      <span class="archive-page-counter">
-        
-        
+      
+
+      
         
           
-        
-        Um..! 11 posts in total. Keep on posting.
-      </span>
-      
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
+<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
+<ol>
+<li>将方法拆分多个相对更短的代码段</li>
+<li>针对每个方法处理异味,但一次仅针对一种异味</li>
+<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
+</ol>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>非常长或复杂的方法或类.</li>
+<li>当你大概流量代码时能够发现多种异味.</li>
+<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>将代码拆分为多个段落</li>
+<li>一次仅尝试修复一种异味</li>
+<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
+<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
+</ul>
 
-      
-
-        
-        
-        
-
-        
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2019">2019</h1>
-          </div>
         
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/27/发布构件到maven中央仓库/" itemprop="url">
-            
-              <span itemprop="name">发布构件到maven中央仓库</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-27T20:50:00+08:00" content="2019-04-27">
-          04-27
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/Code-Smell/Deeply-Nested-Code/" itemprop="url">
-            
-              <span itemprop="name">Code Smell : Deeply Nested Code : 深度嵌套的代码</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/Code-Smell/Iteration/" itemprop="url">
-            
-              <span itemprop="name">Code Smell : Iteration : 迭代</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/Code-Smell/If-Statements/" itemprop="url">
-            
-              <span itemprop="name">Code Smell : If-Statements : 条件语句</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/Code-Smell/Multi-Responsibility-Methods/" itemprop="url">
-            
-              <span itemprop="name">Code Smells: Multi-Responsibility Methods : 多职责方法</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/Code-Smell/Mutation/" itemprop="url">
-            
-              <span itemprop="name">Code Smells: Mutation : 突变</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/Code-Smell/Null/" itemprop="url">
-            
-              <span itemprop="name">Code Smell : Null : 空值</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/Code-Smell/Too-Many-Problems/" itemprop="url">
-            
-              <span itemprop="name">Code Smell : Too Many Problems : 太多的问题</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
     </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
   </div>
   
   
   
+  </article>
+
+
+    
+  </section>
 
   
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
 
 
 

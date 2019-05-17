@@ -289,7 +289,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/15/在开发中使用Docker/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/17/use_docker_in_development-continued.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="hadix">
@@ -309,7 +309,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/05/15/在开发中使用Docker/" class="post-title-link" itemprop="url">在开发中使用Docker</a>
+                <a href="/2019/05/17/use_docker_in_development-continued.html" class="post-title-link" itemprop="url">在开发中使用Docker-续</a>
               
             
           </h1>
@@ -334,12 +334,196 @@
                 
               
 
-              <time title="Created: 2019-05-15 00:17:30 / Modified: 00:23:22" itemprop="dateCreated datePublished" datetime="2019-05-15T00:17:30+08:00">2019-05-15</time>
+              <time title="Created: 2019-05-17 21:23:04 / Modified: 21:47:47" itemprop="dateCreated datePublished" datetime="2019-05-17T21:23:04+08:00">2019-05-17</time>
             
 
             
               
 
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>本文内容承接<a href="/2019/05/15/use_docker_in_development.html">上一篇：在开发中使用Docker</a></p>
+</blockquote>
+<h2 id="运行多个容器"><a href="#运行多个容器" class="headerlink" title="运行多个容器"></a>运行多个容器</h2><p>下面我们用一个稍微复杂点儿的服务来演示如何搭配使用多个容器。演示使用的计数器服务由web服务，保存计数用的Redis实例，以及保存业务数据的Mysql实例组成，共运行三个容器。</p>
+<p>使用Docker运行mysql和redis</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建一个自定义bridge network，后续所有的容器都连接到这个网络上以便相互访问</span></span><br><span class="line">docker network create counter-net</span><br><span class="line"><span class="comment"># 运行mysql 5，该命令会自动从Docker Hub拉取镜像</span></span><br><span class="line">docker run --rm \</span><br><span class="line">--network counter-net \</span><br><span class="line">--name mysql \</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=12345678 \</span><br><span class="line">-d mysql:5</span><br><span class="line"></span><br><span class="line"><span class="comment"># 运行redis，该命令会自动从Docker Hub拉去镜像redis</span></span><br><span class="line">docker run --rm \</span><br><span class="line">--name redis \</span><br><span class="line">--network counter-net \</span><br><span class="line">-d redis</span><br></pre></td></tr></table></figure>
+<p>构建<code>simple-counter</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 从samples仓库中签出simple-counter</span></span><br><span class="line">git init simple-counter</span><br><span class="line"><span class="built_in">cd</span> simple-counter</span><br><span class="line">git remote add origin git@github.com:hadix-lin/samples.git</span><br><span class="line">git config core.sparsecheckout <span class="literal">true</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"simple-counter/"</span> &gt; .git/info/sparse-checkout</span><br><span class="line">git pull origin master</span><br><span class="line"><span class="comment"># 构建simple-counter</span></span><br><span class="line">mvn package</span><br><span class="line">cp target/simple-counter-1.0-SNAPSHOT.jar docker-image/</span><br><span class="line"><span class="built_in">cd</span> docker-image</span><br><span class="line"><span class="comment"># 在docker-image文件夹中有Dockerfile文件</span></span><br><span class="line">docker build -t simple-counter .</span><br><span class="line">docker run -p 8080:8080 \</span><br><span class="line">--rm \</span><br><span class="line">--name simple-counter \</span><br><span class="line">--network counter-net \</span><br><span class="line">-d simple-counter</span><br></pre></td></tr></table></figure>
+<p>simple-counter/docker-image/Dockerfile内容如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">8</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> simple-counter-1.0-SNAPSHOT.jar app.jar</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span>/TCP</span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">"java"</span>,<span class="string">"-jar"</span>,<span class="string">"app.jar"</span>]</span></span><br></pre></td></tr></table></figure>
+<p>然后浏览器访问<a href="http://127.0.0.1:8080/" target="_blank" rel="noopener">http://127.0.0.1:8080/</a>可以得到如下响应</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  "hostSummary": &#123; //数据库主机信息</span><br><span class="line">    "statement_avg_latency": "175.19 us",</span><br><span class="line">    "current_connections": "12",</span><br><span class="line">    "total_connections": "24",</span><br><span class="line">    "unique_users": "1",</span><br><span class="line">    "current_memory": "0 bytes",</span><br><span class="line">    "file_ios": "1393",</span><br><span class="line">    "host": "172.17.0.1",</span><br><span class="line">    "total_memory_allocated": "0 bytes",</span><br><span class="line">    "statements": "3407",</span><br><span class="line">    "file_io_latency": "3.85 ms",</span><br><span class="line">    "statement_latency": "596.86 ms",</span><br><span class="line">    "table_scans": "217"</span><br><span class="line">  &#125;,</span><br><span class="line">  "counter": 24 //每次访问计数器+1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>要关闭服务使用如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker stop &lt;container id or name&gt;</span><br><span class="line"><span class="comment"># 本文启动了三个容器，故需要下面三条指令来关闭容器</span></span><br><span class="line">docker stop mysql</span><br><span class="line">docker stop redis</span><br><span class="line">docker stop simple-counter</span><br><span class="line"></span><br><span class="line"><span class="comment">#获取container id or name</span></span><br><span class="line">docker container ls</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>默认情况下，同一个主机上运行的docker容器会加入一个默认的bridge网络，可以通过容器的ip地址互相访问。但是镜像构建时是无法知道依赖容器的ip地址的，在上面的示例中是通过”mysql”，”redis”这样的hostname进行访问的，所以在此需要使用docker network create \<net-name> 来创建自定义网络，自定义网络会为加入该网络的容器提供自动DNS解析，容器可以通过名称互相访问。</net-name></p>
+<p>在上面的示例中，simple-counter中有如下配置来控制redis和mysql连接：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; spring.datasource.url=jdbc:mysql://mysql:3306/sys</span><br><span class="line">&gt; spring.redis.host=redis</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<p>由于以上配置的存在，要让simple-counter正常运行，redis和mysql的容器名称必须与配置中使用的主机名称一致。</p>
+</blockquote>
+<h2 id="使用docker-compose"><a href="#使用docker-compose" class="headerlink" title="使用docker-compose"></a>使用docker-compose</h2><p>上面的命令比较繁琐，可以提前准备一个<code>docker-compose.yml</code>文件来进行管理。</p>
+<p>simple-counter/docker-image/docker-compose.yml内容如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">"3"</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line"><span class="attr">  redis:</span> <span class="comment"># 服务名</span></span><br><span class="line"><span class="attr">    image:</span> <span class="string">redis</span> <span class="comment"># 要部署的镜像</span></span><br><span class="line"><span class="attr">    networks:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">counter-net</span></span><br><span class="line"><span class="attr">  mysql:</span></span><br><span class="line"><span class="attr">    image:</span> <span class="attr">mysql:5</span> <span class="comment"># 要部署的镜像</span></span><br><span class="line"><span class="attr">    environment:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">MYSQL_ROOT_PASSWORD=12345678</span></span><br><span class="line"><span class="attr">    networks:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">counter-net</span></span><br><span class="line"><span class="attr">  web:</span></span><br><span class="line"><span class="attr">    build:</span> <span class="string">.</span> <span class="comment"># 构建镜像使用的context</span></span><br><span class="line"><span class="attr">    ports:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">"8080:8080"</span></span><br><span class="line"><span class="attr">    networks:</span></span><br><span class="line"><span class="bullet">      -</span> <span class="string">counter-net</span></span><br><span class="line"><span class="attr">networks:</span> <span class="comment"># 定义网络，相当于docker network create &lt;net-name&gt;</span></span><br><span class="line"><span class="attr">  counter-net:</span></span><br></pre></td></tr></table></figure>
+<p>该文件定义了三个服务redis、mysql、web。其中web是通过simple-counter/docker-image/Dockerfile构建的。</p>
+<p>有了这个文件后，运行simple-counter服务仅需要如下命令即可：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 从samples仓库中签出simple-counter</span></span><br><span class="line">git init simple-counter</span><br><span class="line"><span class="built_in">cd</span> simple-counter</span><br><span class="line">git remote add origin git@github.com:hadix-lin/samples.git</span><br><span class="line">git config core.sparsecheckout <span class="literal">true</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"simple-counter/"</span> &gt; .git/info/sparse-checkout</span><br><span class="line">git pull origin master</span><br><span class="line"><span class="comment"># 构建simple-counter</span></span><br><span class="line">mvn package</span><br><span class="line">cp target/simple-counter-1.0-SNAPSHOT.jar docker-image/</span><br><span class="line"><span class="comment">## 如果之前已经构建过simple-counter前面都可以跳过</span></span><br><span class="line"><span class="built_in">cd</span> docker-image</span><br><span class="line">docker-compose up</span><br></pre></td></tr></table></figure>
+<p>关闭服务使用</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> docker-image</span><br><span class="line">docker-compose down</span><br></pre></td></tr></table></figure>
+<h2 id="命令总结"><a href="#命令总结" class="headerlink" title="命令总结"></a>命令总结</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建自定义网络</span></span><br><span class="line">docker network create &lt;net_name&gt;</span><br><span class="line"><span class="comment"># 运行容器并加入网络</span></span><br><span class="line">docker run --network &lt;net_name&gt; [other_params] &lt;image:tag&gt;</span><br><span class="line"><span class="comment"># 列出所有运行的容器</span></span><br><span class="line">docker container ls</span><br><span class="line"><span class="comment"># 使用编排文件管理多个容器</span></span><br><span class="line">docker-compose up</span><br><span class="line">docker-compose down</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/15/use_docker_in_development.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="hadix">
+      <meta itemprop="description" content="我的文章">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/15/use_docker_in_development.html" class="post-title-link" itemprop="url">在开发中使用Docker</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-05-15 00:17:30" itemprop="dateCreated datePublished" datetime="2019-05-15T00:17:30+08:00">2019-05-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-05-17 21:47:10" itemprop="dateModified" datetime="2019-05-17T21:47:10+08:00">2019-05-17</time>
               
             
           </span>
@@ -400,22 +584,29 @@
 <h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><p>前面的操作已经准备好了Docker镜像，下面开始让应用运行起来</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">docker run  <span class="comment"># 运行指令</span></span><br><span class="line">-d\ <span class="comment"># 后台运行(detached)</span></span><br><span class="line">-p 8080:8080\ <span class="comment"># 绑定主机和容器的端口</span></span><br><span class="line">--rm\ <span class="comment"># 容器退出后自动清除容器</span></span><br><span class="line">--name sample <span class="comment"># 指定容器名称</span></span><br><span class="line">springfox-plus:sample <span class="comment"># 要运行的镜像</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 将命令写在单行</span></span><br><span class="line">docker run -d -p 8080:8080 --rm --name sample springfox-plus:sample</span><br></pre></td></tr></table></figure>
 <p>然后使用浏览器访问地址[<a href="http://127.0.0.1:8080/swagger-ui.html]" target="_blank" rel="noopener">http://127.0.0.1:8080/swagger-ui.html]</a>(<a href="http://127.0.0.1:8080/swagger-ui.html]即可访问swagger-ui，如下图所示" target="_blank" rel="noopener">http://127.0.0.1:8080/swagger-ui.html]即可访问swagger-ui，如下图所示</a>:</p>
-<p><img src="https://i.loli.net/2019/05/15/5cdae884f2c1678142.png" alt="image-20190514180551496"></p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190514180551496.png" alt="image-20190514180551496"></p>
 <h2 id="改进开发流程"><a href="#改进开发流程" class="headerlink" title="改进开发流程"></a>改进开发流程</h2><p>上文的构建-&gt;运行的流程比较适合将发布到生产环境的时候使用，在开发阶段，我们会经常进行修改测试，如果每次都要重新构建镜像然后运行，就会比较繁琐。我们期望在开发阶段只构建一次镜像，该镜像保持和生产一直的配置，但是应用包本身不需要包含在其中，这样更改应用包就不需要重新构建镜像了。</p>
 <p>可以通过<code>VOLUME</code>来将让容器直接访问本地的应用，下面开发修改Dockerfile为如下内容:</p>
 <figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">8</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mkdir /app</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /app</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span>/TCP</span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">"java"</span>,<span class="string">"-jar"</span>,<span class="string">"springfox-plus-sample-1.0.1.jar"</span>]</span></span><br></pre></td></tr></table></figure>
 <p>使用上面的Dockerfile构建一个新的Docker镜像,然后使用<code>—mount</code>参数来运行</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># workdir = docker-image</span></span><br><span class="line">docker build -t springfox-plus:sample-use-mount .</span><br><span class="line"><span class="built_in">cd</span> ..</span><br><span class="line"><span class="comment"># workdir = springfox-plus-sample</span></span><br><span class="line">docker run -d -p 8080:8080 --name sample-use-mount --mount <span class="built_in">type</span>=<span class="built_in">bind</span>,<span class="built_in">source</span>=<span class="string">"<span class="variable">$(pwd)</span>"</span>/target,target=/app,<span class="built_in">readonly</span> springfox-plus:sample-use-mount</span><br><span class="line"><span class="comment"># 停止容器运行</span></span><br><span class="line">docker stop sample-use-mount</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># workdir = docker-image</span></span><br><span class="line">docker build -t springfox-plus:sample-use-mount .</span><br><span class="line"><span class="built_in">cd</span> ..</span><br><span class="line"><span class="comment"># workdir = springfox-plus-sample</span></span><br><span class="line">docker run -d -p 8080:8080 --name sample-use-mount --mount \</span><br><span class="line"><span class="built_in">type</span>=<span class="built_in">bind</span>,<span class="built_in">source</span>=<span class="string">"<span class="variable">$(pwd)</span>"</span>/target,target=/app,<span class="built_in">readonly</span> \</span><br><span class="line">springfox-plus:sample-use-mount</span><br><span class="line"><span class="comment"># 停止容器运行</span></span><br><span class="line">docker stop sample-use-mount</span><br></pre></td></tr></table></figure>
 <p>这样每次更改应用包只要使用<code>mvn package</code>重新打包，然后使用上面的命令重启容器即可，避免了重新构建镜像。</p>
 <p>如果使用IntellijIDEA，那么可以通过Run Configuration进行配置：</p>
-<p><img src="https://i.loli.net/2019/05/15/5cdae88628e1e25881.png" alt="image-20190514194653182"></p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190514194653182.png" alt="image-20190514194653182"></p>
 <p>可以直接将<code>mvn package</code>配置到Before launch的列表中，这样每次使用这个Run Configuration运行docker容器时都会重新构建应用包，可以进一步减少开发过程中的人工操作。</p>
 <h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><p>应用运行在Docker容器中，对开发者来说可以视为运行在另外远程服务器上，所以可以通过远程调试端口来进行调试。</p>
 <p>只需要更改Dockerfile中的CMD，在入口命令加入java远程调试的相关设置即可。例如：</p>
 <figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">8</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> . /app</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /app</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span>/tcp</span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">"java"</span>,<span class="string">"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"</span>,\</span></span><br><span class="line"><span class="bash"><span class="string">"-jar"</span>,<span class="string">"sample.jar"</span>]</span></span><br></pre></td></tr></table></figure>
 <p>重新构建镜像并运行，即可通过端口5005进行远程调试了。</p>
 <p>在IntellijIDEA中配置远程调试，如图：</p>
-<p><img src="https://i.loli.net/2019/05/15/5cdae8873d95668266.png" alt="image-20190514195906722"></p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190514195906722.png" alt="image-20190514195906722"></p>
+<h2 id="访问运行的容器"><a href="#访问运行的容器" class="headerlink" title="访问运行的容器"></a>访问运行的容器</h2><p>在上文中运行容器我们使用的命令是<code>docker run -d ……</code> 其中的<code>-d</code>参数表示后台运行容器，此时我们看不到容器中运行的应用的标准输入/输出。</p>
+<p>使用<code>docker attach &lt;container-name&gt;</code>可以将当前终端的标准输入/输出/错误流关联到指定的容器上。执行该命令后，就可以在当前终端中看到容器的控制台输出了。</p>
+<p>如果想在容器中运行命令可以使用<code>docker exec [OPTIONS] CONTAINER COMMAND [ARG…]</code>，进一步可以利用该命令获得与运行的容器进行交互的能力。</p>
+<p>如果容器运行的镜像中包含<code>bash</code>命令，可以使用<code>docker exec -it CONTAINER bash</code>来在容器中运行<code>bash</code>，并将当前终端的标准输入/输出/错误流关联到容器。这样就可以通过命令行跟运行的容器进行交互了，在这个命令行中能够使用的命令取决于运行的镜像内容。</p>
+<p>有关docker命令的具体使用可以使用<code>docker help COMMAND</code>来查看使用说明，可以参考<a href="https://docs.docker.com/engine/reference/commandline/cli" target="_blank" rel="noopener">文档</a>。</p>
+<h2 id="命令总结"><a href="#命令总结" class="headerlink" title="命令总结"></a>命令总结</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 验证docker安装，输出使用说明</span></span><br><span class="line">docker --<span class="built_in">help</span> </span><br><span class="line"><span class="comment"># 构建镜像</span></span><br><span class="line">docker build -t &lt;tag&gt; &lt;context_path&gt;</span><br><span class="line"><span class="comment"># 启动容器</span></span><br><span class="line">docker run -d -p &lt;container_port&gt;:&lt;host_port&gt; --name &lt;container_name&gt; \</span><br><span class="line">--mount &lt;mount_params&gt; &lt;image:tag&gt;</span><br><span class="line"><span class="comment"># 停止容器</span></span><br><span class="line">docker stop &lt;container_name or id&gt;</span><br><span class="line"><span class="comment"># 将标准输入、输出、错误流关联到运行的容器</span></span><br><span class="line">docker attach &lt;container_name or id&gt;</span><br></pre></td></tr></table></figure>
+<p>后续内容<a href="/2019/05/17/use_docker_in_development-continued.html">在开发中使用Docker-续.md</a> </p>
 
           
         
@@ -472,7 +663,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/10/我的IDEA插件列表/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/10/undefined.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="hadix">
@@ -492,7 +683,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/05/10/我的IDEA插件列表/" class="post-title-link" itemprop="url">我的IDEA插件列表</a>
+                <a href="/2019/05/10/undefined.html" class="post-title-link" itemprop="url">我的IDEA插件列表</a>
               
             
           </h1>
@@ -660,7 +851,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/10/改善编程体验-IdeaVimExtension介绍/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/10/undefined.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="hadix">
@@ -680,7 +871,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/05/10/改善编程体验-IdeaVimExtension介绍/" class="post-title-link" itemprop="url">改善编程体验: IdeaVimExtension介绍</a>
+                <a href="/2019/05/10/undefined.html" class="post-title-link" itemprop="url">改善编程体验: IdeaVimExtension介绍</a>
               
             
           </h1>
@@ -854,7 +1045,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/27/发布构件到maven中央仓库/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/27/undefined.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="hadix">
@@ -874,7 +1065,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/04/27/发布构件到maven中央仓库/" class="post-title-link" itemprop="url">发布构件到maven中央仓库</a>
+                <a href="/2019/04/27/undefined.html" class="post-title-link" itemprop="url">发布构件到maven中央仓库</a>
               
             
           </h1>
@@ -1074,7 +1265,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Code-Smell/Deeply-Nested-Code/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/undefined.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="hadix">
@@ -1094,336 +1285,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/04/23/Code-Smell/Deeply-Nested-Code/" class="post-title-link" itemprop="url">Code Smell : Deeply Nested Code : 深度嵌套的代码</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:31:50" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在类似Java的语言中,非常容易见到多层嵌套的for循环和if条件判断判断,特别是在Java8出现以前.这类代码对于维护低级的数据结构(arrays,collection,…)来说是完全可以接受的.但是当这样的代码出现在你的业务领域代码中时,就会令你的代码<strong>恶丑无比</strong>,特别是嵌套很深的时候.</p>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li><p>深层嵌套的代码(超过1层,就要注意,超过2层就会开始发臭),通常是for/while循环和if条件判断.</p>
-<p>通过代码的缩进程度可以很明显的嗅到臭味.</p>
-</li>
-<li><p>链式调用的getter方法.加入一个链式调用的语句中,每个调用都是getter方法,那么也应当视为一个深层嵌套的情况.</p>
-<blockquote>
-<p> Builder模式或其他Domain-DSL的链式调用情况除外.</p>
-</blockquote>
-</li>
-</ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li><p>嵌套的for循环往往是通过遍历数据结构来检查是否满足业务逻辑或提取部分数据进行后续处理.可以考虑将检查数据的代码放入持有该数据结构的的对象中,然后通过一个良好命名的方法来回答其他对象的问题.</p>
-</li>
-<li><p>检查你的代码,考虑数据结构是否需要直接泄露给其他类.对数据的处理和职责是否可以限定在持有类中,然后通过helper方法提供给其他类进行操作.这样可以将对数据的处理逻辑放置在靠近数据结构的地方,提高代码内聚性.</p>
-</li>
-<li><p><a href="https://martinfowler.com/bliki/EncapsulatedCollection.html" target="_blank" rel="noopener">集合封装</a>:使用这种模式意味着你正在将一种数据结构当做领域对象来使用,考虑将这种数据结构封装在领域对象自身中,与其暴露内部实现,不如通过提供helper方法来解决其他业务对象的问题.</p>
-</li>
-</ul>
-<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">final</span> MappedField mf : persistenceFields) &#123;</span><br><span class="line">    <span class="comment">// 可以将内嵌的循环直接放入MappedField中</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> String n : mf.getLoadNames()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (storedName.equals(n)) &#123;</span><br><span class="line">          <span class="keyword">return</span> mf;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 改为如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MappedField</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> List&lt;String&gt; loadNames = ...;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasName</span><span class="params">(String storedName)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> String n : mf.getLoadNames()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (storedName.equals(n)) &#123;</span><br><span class="line">        <span class="keyword">return</span> mf;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 使用Java8可以定义为如下</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasName</span><span class="params">(String storedName)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> getLoadNames().stream().anyMatch(Objects::equals);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">final</span> MappedField mf : persistenceFields) &#123;</span><br><span class="line">    <span class="keyword">if</span>(mf.hasName(storedName))&#123;</span><br><span class="line">      <span class="keyword">return</span> mf;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用Java8可以定义为如下</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  persistenceFields.stream()</span><br><span class="line">    .filter(mf-&gt;mf.hasName(storedName))</span><br><span class="line">    .findFirst()</span><br><span class="line">    .orElse(<span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 避免Null-Smell可以改为直接返回Optional</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Optional&lt;MappedField&gt; <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  persistenceFields.stream()</span><br><span class="line">    .filter(mf-&gt;mf.hasName(storedName))</span><br><span class="line">    .findFirst();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Code-Smell/Iteration/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="hadix">
-      <meta itemprop="description" content="我的文章">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="hadix' Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/23/Code-Smell/Iteration/" class="post-title-link" itemprop="url">Code Smell : Iteration : 迭代</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:34:42" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当你看到通过for循环或者streams-api遍历集合的代码时,需要明确知道迭代遍历是必须的(意味着对集合中的每个元素都进行了必要的逻辑处理).如果遍历一个数据结构总是为了从中查找某个值,那么最好将集合转换为Set或Map.这样做不仅可以令代码更简洁已读,而且还能提供更好的性能.</p>
-<p>每当选择使用一种数据结构时,都要考虑一下对该数据结构的<strong>更新(add/update)</strong>或<strong>只读</strong>操作的频率,根据读写操作的占比和更新操作的类型来决定使用何种数据结构会更高效.举例来说:</p>
-<ul>
-<li>根据key寻找value当然是用Map</li>
-<li>检查value是否存在用Set</li>
-<li>使用索引进行随机写入使用ArrayList,顺序写入任意位置增删元素用LinkedList</li>
-<li>更多</li>
-</ul>
-<p>全部都是常识.</p>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>使用for循环遍历列表来查找某个符合条件的值</li>
-<li>使用streams-api调用<code>findFirst/findAny/anyMatch</code></li>
-</ul>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><ul>
-<li><p>如果总是通过for循环遍历来检查某个值是否存在于List,可以想想List中的元素是否唯一,如果是可以使用Set进行替换.</p>
-</li>
-<li><p>如果总是查找一个具有特定属性值的对象,可以考虑使用以属性值为key的Map进行替换,可以提升查找效率.</p>
-</li>
-<li><p>java.util.Collections API提供了非常多有用的方法,如果你无法变更数据结果,可以考虑看看看Collections中有没有方法可以替换循环迭代的代码.例如:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//代码片段1</span></span><br><span class="line"><span class="keyword">for</span> (String s : getLoadNames()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (storedName.equals(s)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以改为如下代码</span></span><br><span class="line"><span class="keyword">return</span> Collections.contains(getLoadNames,storedName);</span><br><span class="line"></span><br><span class="line"><span class="comment">//代码片段2</span></span><br><span class="line">Iterator&lt;String&gt; iter = getLoadNames().iterator();</span><br><span class="line"><span class="keyword">while</span>(iter.hasNext())&#123;</span><br><span class="line">  String name = iter.next();</span><br><span class="line">  <span class="keyword">if</span>(storedName.equals())&#123;</span><br><span class="line">    iter.remove();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以改为</span></span><br><span class="line">Collections.removeIf(name-&gt;storedName.equals(name))</span><br></pre></td></tr></table></figure>
-<p>示例代码中的转换,IntellijIdea IDE提供了快速识别转换的能力,通常在编辑器中会自动标注可以转换的代码,只需要按下Alt+Enter就可以快速转换为Collections API代码.</p>
-</li>
-<li><p>如果确实需要对数据结构进行遍历,最好将遍历代码封装的业务领域对象的方法中,然后给它起一个容易识别的名字.</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Code-Smell/If-Statements/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="hadix">
-      <meta itemprop="description" content="我的文章">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="hadix' Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/23/Code-Smell/If-Statements/" class="post-title-link" itemprop="url">Code Smell : If-Statements : 条件语句</a>
+                <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smell : If-Statements : 条件语句</a>
               
             
           </h1>
@@ -1571,7 +1433,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Code-Smell/Multi-Responsibility-Methods/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/undefined.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="hadix">
@@ -1591,7 +1453,336 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/04/23/Code-Smell/Multi-Responsibility-Methods/" class="post-title-link" itemprop="url">Code Smells: Multi-Responsibility Methods : 多职责方法</a>
+                <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smell : Deeply Nested Code : 深度嵌套的代码</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:31:50" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在类似Java的语言中,非常容易见到多层嵌套的for循环和if条件判断判断,特别是在Java8出现以前.这类代码对于维护低级的数据结构(arrays,collection,…)来说是完全可以接受的.但是当这样的代码出现在你的业务领域代码中时,就会令你的代码<strong>恶丑无比</strong>,特别是嵌套很深的时候.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li><p>深层嵌套的代码(超过1层,就要注意,超过2层就会开始发臭),通常是for/while循环和if条件判断.</p>
+<p>通过代码的缩进程度可以很明显的嗅到臭味.</p>
+</li>
+<li><p>链式调用的getter方法.加入一个链式调用的语句中,每个调用都是getter方法,那么也应当视为一个深层嵌套的情况.</p>
+<blockquote>
+<p> Builder模式或其他Domain-DSL的链式调用情况除外.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li><p>嵌套的for循环往往是通过遍历数据结构来检查是否满足业务逻辑或提取部分数据进行后续处理.可以考虑将检查数据的代码放入持有该数据结构的的对象中,然后通过一个良好命名的方法来回答其他对象的问题.</p>
+</li>
+<li><p>检查你的代码,考虑数据结构是否需要直接泄露给其他类.对数据的处理和职责是否可以限定在持有类中,然后通过helper方法提供给其他类进行操作.这样可以将对数据的处理逻辑放置在靠近数据结构的地方,提高代码内聚性.</p>
+</li>
+<li><p><a href="https://martinfowler.com/bliki/EncapsulatedCollection.html" target="_blank" rel="noopener">集合封装</a>:使用这种模式意味着你正在将一种数据结构当做领域对象来使用,考虑将这种数据结构封装在领域对象自身中,与其暴露内部实现,不如通过提供helper方法来解决其他业务对象的问题.</p>
+</li>
+</ul>
+<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">final</span> MappedField mf : persistenceFields) &#123;</span><br><span class="line">    <span class="comment">// 可以将内嵌的循环直接放入MappedField中</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> String n : mf.getLoadNames()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (storedName.equals(n)) &#123;</span><br><span class="line">          <span class="keyword">return</span> mf;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 改为如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MappedField</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> List&lt;String&gt; loadNames = ...;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasName</span><span class="params">(String storedName)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> String n : mf.getLoadNames()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (storedName.equals(n)) &#123;</span><br><span class="line">        <span class="keyword">return</span> mf;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 使用Java8可以定义为如下</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasName</span><span class="params">(String storedName)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> getLoadNames().stream().anyMatch(Objects::equals);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">final</span> MappedField mf : persistenceFields) &#123;</span><br><span class="line">    <span class="keyword">if</span>(mf.hasName(storedName))&#123;</span><br><span class="line">      <span class="keyword">return</span> mf;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用Java8可以定义为如下</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  persistenceFields.stream()</span><br><span class="line">    .filter(mf-&gt;mf.hasName(storedName))</span><br><span class="line">    .findFirst()</span><br><span class="line">    .orElse(<span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 避免Null-Smell可以改为直接返回Optional</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Optional&lt;MappedField&gt; <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  persistenceFields.stream()</span><br><span class="line">    .filter(mf-&gt;mf.hasName(storedName))</span><br><span class="line">    .findFirst();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/undefined.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="hadix">
+      <meta itemprop="description" content="我的文章">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smell : Iteration : 迭代</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:34:42" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当你看到通过for循环或者streams-api遍历集合的代码时,需要明确知道迭代遍历是必须的(意味着对集合中的每个元素都进行了必要的逻辑处理).如果遍历一个数据结构总是为了从中查找某个值,那么最好将集合转换为Set或Map.这样做不仅可以令代码更简洁已读,而且还能提供更好的性能.</p>
+<p>每当选择使用一种数据结构时,都要考虑一下对该数据结构的<strong>更新(add/update)</strong>或<strong>只读</strong>操作的频率,根据读写操作的占比和更新操作的类型来决定使用何种数据结构会更高效.举例来说:</p>
+<ul>
+<li>根据key寻找value当然是用Map</li>
+<li>检查value是否存在用Set</li>
+<li>使用索引进行随机写入使用ArrayList,顺序写入任意位置增删元素用LinkedList</li>
+<li>更多</li>
+</ul>
+<p>全部都是常识.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>使用for循环遍历列表来查找某个符合条件的值</li>
+<li>使用streams-api调用<code>findFirst/findAny/anyMatch</code></li>
+</ul>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><ul>
+<li><p>如果总是通过for循环遍历来检查某个值是否存在于List,可以想想List中的元素是否唯一,如果是可以使用Set进行替换.</p>
+</li>
+<li><p>如果总是查找一个具有特定属性值的对象,可以考虑使用以属性值为key的Map进行替换,可以提升查找效率.</p>
+</li>
+<li><p>java.util.Collections API提供了非常多有用的方法,如果你无法变更数据结果,可以考虑看看看Collections中有没有方法可以替换循环迭代的代码.例如:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//代码片段1</span></span><br><span class="line"><span class="keyword">for</span> (String s : getLoadNames()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (storedName.equals(s)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以改为如下代码</span></span><br><span class="line"><span class="keyword">return</span> Collections.contains(getLoadNames,storedName);</span><br><span class="line"></span><br><span class="line"><span class="comment">//代码片段2</span></span><br><span class="line">Iterator&lt;String&gt; iter = getLoadNames().iterator();</span><br><span class="line"><span class="keyword">while</span>(iter.hasNext())&#123;</span><br><span class="line">  String name = iter.next();</span><br><span class="line">  <span class="keyword">if</span>(storedName.equals())&#123;</span><br><span class="line">    iter.remove();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以改为</span></span><br><span class="line">Collections.removeIf(name-&gt;storedName.equals(name))</span><br></pre></td></tr></table></figure>
+<p>示例代码中的转换,IntellijIdea IDE提供了快速识别转换的能力,通常在编辑器中会自动标注可以转换的代码,只需要按下Alt+Enter就可以快速转换为Collections API代码.</p>
+</li>
+<li><p>如果确实需要对数据结构进行遍历,最好将遍历代码封装的业务领域对象的方法中,然后给它起一个容易识别的名字.</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/undefined.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="hadix">
+      <meta itemprop="description" content="我的文章">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smells: Multi-Responsibility Methods : 多职责方法</a>
               
             
           </h1>
@@ -1727,7 +1918,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Code-Smell/Mutation/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/undefined.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="hadix">
@@ -1747,169 +1938,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/04/23/Code-Smell/Mutation/" class="post-title-link" itemprop="url">Code Smells: Mutation : 突变</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:33:54" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
-<ul>
-<li>类的字段导致对象状态是可变的</li>
-<li>方法的参数/局部变量可以重复赋值</li>
-<li>集合容器的内容可变</li>
-</ul>
-<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>对变量不只一次赋值</li>
-<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
-<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
-<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
-<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
-</ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
-<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
-<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
-<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Code-Smell/Null/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="hadix">
-      <meta itemprop="description" content="我的文章">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="hadix' Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/23/Code-Smell/Null/" class="post-title-link" itemprop="url">Code Smell : Null : 空值</a>
+                <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smell : Null : 空值</a>
               
             
           </h1>
@@ -2089,7 +2118,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-count">12</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>

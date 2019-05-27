@@ -309,6 +309,328 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
+                <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smell : Too Many Problems : 太多的问题</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:33:25" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
+<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
+<ol>
+<li>将方法拆分多个相对更短的代码段</li>
+<li>针对每个方法处理异味,但一次仅针对一种异味</li>
+<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
+</ol>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>非常长或复杂的方法或类.</li>
+<li>当你大概流量代码时能够发现多种异味.</li>
+<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>将代码拆分为多个段落</li>
+<li>一次仅尝试修复一种异味</li>
+<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
+<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/undefined.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="hadix">
+      <meta itemprop="description" content="我的文章">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smells: Mutation : 突变</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:33:54" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
+<ul>
+<li>类的字段导致对象状态是可变的</li>
+<li>方法的参数/局部变量可以重复赋值</li>
+<li>集合容器的内容可变</li>
+</ul>
+<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>对变量不只一次赋值</li>
+<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
+<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
+<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
+<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
+<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
+<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
+<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/undefined.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="hadix">
+      <meta itemprop="description" content="我的文章">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
                 <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smell : Null : 空值</a>
               
             
@@ -443,166 +765,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/undefined.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="hadix">
-      <meta itemprop="description" content="我的文章">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="hadix' Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/23/undefined.html" class="post-title-link" itemprop="url">Code Smell : Too Many Problems : 太多的问题</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-04-23 21:30:00 / Modified: 21:33:25" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
-<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
-<ol>
-<li>将方法拆分多个相对更短的代码段</li>
-<li>针对每个方法处理异味,但一次仅针对一种异味</li>
-<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
-</ol>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>非常长或复杂的方法或类.</li>
-<li>当你大概流量代码时能够发现多种异味.</li>
-<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
-</ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>将代码拆分为多个段落</li>
-<li>一次仅尝试修复一种异味</li>
-<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
-<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -649,7 +811,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-count">13</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>

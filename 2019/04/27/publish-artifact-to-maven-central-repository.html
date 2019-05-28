@@ -106,8 +106,8 @@
   <meta name="description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
 <meta name="keywords" content="tutorial">
 <meta property="og:type" content="article">
-<meta property="og:title" content="发布构件到maven中央仓库">
-<meta property="og:url" content="http://yoursite.com/2019/04/27/undefined.html">
+<meta property="og:title" content="发布构件到maven中央仓">
+<meta property="og:url" content="http://yoursite.com/2019/04/27/publish-artifact-to-maven-central-repository.html">
 <meta property="og:site_name" content="hadix&#39; Knowledge Index">
 <meta property="og:description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
 <meta property="og:locale" content="default">
@@ -115,9 +115,9 @@
 <meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf170e63a672418.png">
 <meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf17248c0b82591.png">
 <meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf1737f70f93934.png">
-<meta property="og:updated_time" content="2019-05-14T16:51:18.761Z">
+<meta property="og:updated_time" content="2019-05-28T06:41:04.819Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="发布构件到maven中央仓库">
+<meta name="twitter:title" content="发布构件到maven中央仓">
 <meta name="twitter:description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
 <meta name="twitter:image" content="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png">
 
@@ -127,7 +127,7 @@
 
   
   
-  <link rel="canonical" href="http://yoursite.com/2019/04/27/undefined">
+  <link rel="canonical" href="http://yoursite.com/2019/04/27/publish-artifact-to-maven-central-repository">
 
 
 
@@ -137,7 +137,7 @@
   };
 </script>
 
-  <title>发布构件到maven中央仓库 | hadix' Knowledge Index</title>
+  <title>发布构件到maven中央仓 | hadix' Knowledge Index</title>
   
 
 
@@ -341,7 +341,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/27/undefined.html">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/27/publish-artifact-to-maven-central-repository.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="hadix">
@@ -358,7 +358,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">发布构件到maven中央仓库
+          <h2 class="post-title" itemprop="name headline">发布构件到maven中央仓
 
               
             
@@ -401,7 +401,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-05-15 00:51:18" itemprop="dateModified" datetime="2019-05-15T00:51:18+08:00">2019-05-15</time>
+                <time title="Modified: 2019-05-28 14:41:04" itemprop="dateModified" datetime="2019-05-28T14:41:04+08:00">2019-05-28</time>
               
             
           </span>
@@ -419,8 +419,8 @@
                 </span>
             
                 <span class="post-meta-item-text">Comments: </span>
-                <a href="/2019/04/27/undefined.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/04/27/undefined.html" itemprop="commentCount"></span>
+                <a href="/2019/04/27/publish-artifact-to-maven-central-repository.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/04/27/publish-artifact-to-maven-central-repository.html" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -557,7 +557,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/04/23/undefined.html" rel="next" title="Code Smell : Deeply Nested Code : 深度嵌套的代码">
+              <a href="/2019/04/23/code-smell_deeply-nested-code.html" rel="next" title="Code Smell : Deeply Nested Code : 深度嵌套的代码">
                 <i class="fa fa-chevron-left"></i> Code Smell : Deeply Nested Code : 深度嵌套的代码
               </a>
             
@@ -567,7 +567,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/05/10/undefined.html" rel="prev" title="改善编程体验: IdeaVimExtension介绍">
+              <a href="/2019/05/10/introduce-idea-vim-extension.html" rel="prev" title="改善编程体验: IdeaVimExtension介绍">
                 改善编程体验: IdeaVimExtension介绍 <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -922,9 +922,9 @@
 
 <script>
   var disqus_config = function() {
-    this.page.url = "http://yoursite.com/2019/04/27/undefined.html";
-    this.page.identifier = "2019/04/27/undefined.html";
-    this.page.title = '发布构件到maven中央仓库';
+    this.page.url = "http://yoursite.com/2019/04/27/publish-artifact-to-maven-central-repository.html";
+    this.page.identifier = "2019/04/27/publish-artifact-to-maven-central-repository.html";
+    this.page.title = '发布构件到maven中央仓';
     };
   function loadComments() {
     var d = document, s = d.createElement('script');

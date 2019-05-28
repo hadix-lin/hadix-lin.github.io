@@ -103,16 +103,18 @@
 
 
 
-  <meta name="description" content="hadix的知识索引">
-<meta property="og:type" content="website">
-<meta property="og:title" content="hadix&#39; Knowledge Index">
-<meta property="og:url" content="http://yoursite.com/archives/page/2/index.html">
+  <meta name="description" content="问题概述在类似Java的语言中,非常容易见到多层嵌套的for循环和if条件判断判断,特别是在Java8出现以前.这类代码对于维护低级的数据结构(arrays,collection,…)来说是完全可以接受的.但是当这样的代码出现在你的业务领域代码中时,就会令你的代码恶丑无比,特别是嵌套很深的时候. 症状 深层嵌套的代码(超过1层,就要注意,超过2层就会开始发臭),通常是for/while循环和if条">
+<meta name="keywords" content="coding">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Code Smell : Deeply Nested Code : 深度嵌套的代码">
+<meta property="og:url" content="http://yoursite.com/2019/04/23/code-smell_deeply-nested-code.html">
 <meta property="og:site_name" content="hadix&#39; Knowledge Index">
-<meta property="og:description" content="hadix的知识索引">
+<meta property="og:description" content="问题概述在类似Java的语言中,非常容易见到多层嵌套的for循环和if条件判断判断,特别是在Java8出现以前.这类代码对于维护低级的数据结构(arrays,collection,…)来说是完全可以接受的.但是当这样的代码出现在你的业务领域代码中时,就会令你的代码恶丑无比,特别是嵌套很深的时候. 症状 深层嵌套的代码(超过1层,就要注意,超过2层就会开始发臭),通常是for/while循环和if条">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-05-28T06:42:23.679Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="hadix&#39; Knowledge Index">
-<meta name="twitter:description" content="hadix的知识索引">
+<meta name="twitter:title" content="Code Smell : Deeply Nested Code : 深度嵌套的代码">
+<meta name="twitter:description" content="问题概述在类似Java的语言中,非常容易见到多层嵌套的for循环和if条件判断判断,特别是在Java8出现以前.这类代码对于维护低级的数据结构(arrays,collection,…)来说是完全可以接受的.但是当这样的代码出现在你的业务领域代码中时,就会令你的代码恶丑无比,特别是嵌套很深的时候. 症状 深层嵌套的代码(超过1层,就要注意,超过2层就会开始发臭),通常是for/while循环和if条">
 
 
 
@@ -120,7 +122,7 @@
 
   
   
-  <link rel="canonical" href="http://yoursite.com/archives/page/2/">
+  <link rel="canonical" href="http://yoursite.com/2019/04/23/code-smell_deeply-nested-code">
 
 
 
@@ -130,7 +132,7 @@
   };
 </script>
 
-  <title>Archive | hadix' Knowledge Index</title>
+  <title>Code Smell : Deeply Nested Code : 深度嵌套的代码 | hadix' Knowledge Index</title>
   
 
 
@@ -188,7 +190,7 @@
     
   
 
-  <div class="container sidebar-position-left page-archive">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -243,7 +245,7 @@
         
         
           
-          <li class="menu-item menu-item-archives menu-item-active">
+          <li class="menu-item menu-item-archives">
 
     
     
@@ -314,169 +316,240 @@
           
             
 
-    
-    
-      
-      
-    
-      
-      
-    
-    
-
-  
-
-
           
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block archive">
-    <div id="posts" class="posts-collapse">
-      <span class="archive-move-on"></span>
+  <div id="posts" class="posts-expand">
+    
 
-      
-      <span class="archive-page-counter">
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/code-smell_deeply-nested-code.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="hadix">
+      <meta itemprop="description" content="hadix的知识索引">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Knowledge Index">
+    </span>
+
+    
+      <header class="post-header">
+
         
         
+          <h2 class="post-title" itemprop="name headline">Code Smell : Deeply Nested Code : 深度嵌套的代码
+
+              
+            
+          </h2>
         
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-23 21:30:00" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-05-28 14:42:23" itemprop="dateModified" datetime="2019-05-28T14:42:23+08:00">2019-05-28</time>
+              
+            
+          </span>
+
           
-        
-        Um..! 13 posts in total. Keep on posting.
-      </span>
-      
 
-      
-
-        
-        
-        
-
-        
           
-          <div class="collection-title">
-            <h2 class="archive-year" id="archive-year-2019">2019</h2>
-          </div>
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h3 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/code-smell_null.html" itemprop="url">
             
-              <span itemprop="name">Code Smell : Null : 空值</span>
             
-          </a>
-        
-      </h3>
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <span class="post-meta-item-text">Comments: </span>
+                <a href="/2019/04/23/code-smell_deeply-nested-code.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/04/23/code-smell_deeply-nested-code.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
+          
+          
 
-    </header>
-  </article>
+          
+            <span class="post-meta-divider">|</span>
+            <span class="post-meta-item-icon">
+            <i class="fa fa-eye"></i>
+             Views:  
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
 
+          
 
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h3 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/code-smell_mutation.html" itemprop="url">
-            
-              <span itemprop="name">Code Smell: Mutation : 突变</span>
-            
-          </a>
-        
-      </h3>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
 
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h3 class="post-title">
-        
-          <a class="post-title-link" href="/2019/04/23/code-smell_too-many-problems.html" itemprop="url">
-            
-              <span itemprop="name">Code Smell : Too Many Problems : 太多的问题</span>
-            
-          </a>
-        
-      </h3>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-23T21:30:00+08:00" content="2019-04-23">
-          04-23
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
+      
+        <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在类似Java的语言中,非常容易见到多层嵌套的for循环和if条件判断判断,特别是在Java8出现以前.这类代码对于维护低级的数据结构(arrays,collection,…)来说是完全可以接受的.但是当这样的代码出现在你的业务领域代码中时,就会令你的代码<strong>恶丑无比</strong>,特别是嵌套很深的时候.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li><p>深层嵌套的代码(超过1层,就要注意,超过2层就会开始发臭),通常是for/while循环和if条件判断.</p>
+<p>通过代码的缩进程度可以很明显的嗅到臭味.</p>
+</li>
+<li><p>链式调用的getter方法.加入一个链式调用的语句中,每个调用都是getter方法,那么也应当视为一个深层嵌套的情况.</p>
+<blockquote>
+<p> Builder模式或其他Domain-DSL的链式调用情况除外.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li><p>嵌套的for循环往往是通过遍历数据结构来检查是否满足业务逻辑或提取部分数据进行后续处理.可以考虑将检查数据的代码放入持有该数据结构的的对象中,然后通过一个良好命名的方法来回答其他对象的问题.</p>
+</li>
+<li><p>检查你的代码,考虑数据结构是否需要直接泄露给其他类.对数据的处理和职责是否可以限定在持有类中,然后通过helper方法提供给其他类进行操作.这样可以将对数据的处理逻辑放置在靠近数据结构的地方,提高代码内聚性.</p>
+</li>
+<li><p><a href="https://martinfowler.com/bliki/EncapsulatedCollection.html" target="_blank" rel="noopener">集合封装</a>:使用这种模式意味着你正在将一种数据结构当做领域对象来使用,考虑将这种数据结构封装在领域对象自身中,与其暴露内部实现,不如通过提供helper方法来解决其他业务对象的问题.</p>
+</li>
+</ul>
+<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">final</span> MappedField mf : persistenceFields) &#123;</span><br><span class="line">    <span class="comment">// 可以将内嵌的循环直接放入MappedField中</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> String n : mf.getLoadNames()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (storedName.equals(n)) &#123;</span><br><span class="line">          <span class="keyword">return</span> mf;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 改为如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MappedField</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> List&lt;String&gt; loadNames = ...;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasName</span><span class="params">(String storedName)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> String n : mf.getLoadNames()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (storedName.equals(n)) &#123;</span><br><span class="line">        <span class="keyword">return</span> mf;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 使用Java8可以定义为如下</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasName</span><span class="params">(String storedName)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> getLoadNames().stream().anyMatch(Objects::equals);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">final</span> MappedField mf : persistenceFields) &#123;</span><br><span class="line">    <span class="keyword">if</span>(mf.hasName(storedName))&#123;</span><br><span class="line">      <span class="keyword">return</span> mf;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用Java8可以定义为如下</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> MappedField <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  persistenceFields.stream()</span><br><span class="line">    .filter(mf-&gt;mf.hasName(storedName))</span><br><span class="line">    .findFirst()</span><br><span class="line">    .orElse(<span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 避免Null-Smell可以改为直接返回Optional</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Optional&lt;MappedField&gt; <span class="title">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> </span>&#123;</span><br><span class="line">  persistenceFields.stream()</span><br><span class="line">    .filter(mf-&gt;mf.hasName(storedName))</span><br><span class="line">    .findFirst();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
-
     </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/coding/" rel="tag"># coding</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/23/code-smell_if-statements.html" rel="next" title="Code Smell : If-Statements : 条件语句">
+                <i class="fa fa-chevron-left"></i> Code Smell : If-Statements : 条件语句
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/27/publish-artifact-to-maven-central-repository.html" rel="prev" title="发布构件到maven中央仓">
+                发布构件到maven中央仓 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
-
-  
-  <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/archives/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span>
-  </nav>
+  </article>
 
 
+  </div>
 
 
           </div>
           
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
 
         </div>
         
@@ -496,8 +569,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -589,6 +671,23 @@
         </div>
       </div>
 
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题概述"><span class="nav-number">1.</span> <span class="nav-text">问题概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#症状"><span class="nav-number">2.</span> <span class="nav-text">症状</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#可能的解决方案"><span class="nav-number">3.</span> <span class="nav-text">可能的解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例代码"><span class="nav-number">4.</span> <span class="nav-text">示例代码</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
       
 
       
@@ -748,6 +847,10 @@
 
 
   
+  <script src="/js/scrollspy.js?v=7.1.1"></script>
+<script src="/js/post-details.js?v=7.1.1"></script>
+
+
 
   
 
@@ -766,9 +869,28 @@
   <script id="dsq-count-scr" src="https://hadix.disqus.com/count.js" async></script>
 
 
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://yoursite.com/2019/04/23/code-smell_deeply-nested-code.html";
+    this.page.identifier = "2019/04/23/code-smell_deeply-nested-code.html";
+    this.page.title = 'Code Smell : Deeply Nested Code : 深度嵌套的代码';
+    };
+  function loadComments() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://hadix.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+  }
+  
+    loadComments();
+  
+</script>
 
 
 
+
+
+  
 
 
   

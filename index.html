@@ -397,7 +397,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-05-28 18:37:47" itemprop="dateModified" datetime="2019-05-28T18:37:47+08:00">2019-05-28</time>
+                <time title="Modified: 2019-05-30 12:03:15" itemprop="dateModified" datetime="2019-05-30T12:03:15+08:00">2019-05-30</time>
               
             
           </span>
@@ -470,7 +470,7 @@
 <li>一组用于跟daemon进程通信的REST API，用于给daemon发送指令。</li>
 <li>一个命令行接口客户端(CLI)，使用<code>docker</code>命令启动。</li>
 </ul>
-<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/engine-components-flow.png?x-oss-process=style/Q70" alt="Docker Engine Components Flow">)</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/engine-components-flow.png" alt="Docker Engine Components Flow"></p>
 <p>命令行通过Docker REST API与daemon进程进行通信交互，向其发送脚本或命令。许多七大的Docker应用程序会使用底层API和命令行接口。</p>
 <p>daemon进程会创建和管理Docker组件例如镜像(Images)，容器(containers)，网络(networks)，卷(volume)</p>
 <h2 id="主要组件"><a href="#主要组件" class="headerlink" title="主要组件"></a>主要组件</h2><p>Docker具有三个主要组件：</p>
@@ -1504,7 +1504,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-05-30 11:58:55" itemprop="dateModified" datetime="2019-05-30T11:58:55+08:00">2019-05-30</time>
+                <time title="Modified: 2019-05-31 15:55:36" itemprop="dateModified" datetime="2019-05-31T15:55:36+08:00">2019-05-31</time>
               
             
           </span>
@@ -1583,13 +1583,16 @@
 </li>
 </ul>
 </li>
-<li><p>安装重启IDEA后,打开任意代码编辑器在normal模式下输入如下两个命令来激活IdeaVimExtension插件</p>
+<li><p>安装重启IDEA后,输入法自动切换功能会默认启用</p>
+<p>也可以通过打开任意代码编辑器在normal模式下输入如下两个命令来激活IdeaVimExtension插件</p>
 <ul>
-<li><code>:set keep-english-in-normal</code> : 在normal模式保持英文状态</li>
+<li><code>:set keep-english-in-normal</code> : 在normal模式保持英文状态(这也是默认启用的状态)</li>
 <li><code>:set keep-english-in-normal-and-restore-in-insert</code> : 在normal模式保持英文状态,并在回到insert时恢复输入法到原来的状态.例如,编写一段中文注释,用中文输入法写了一段文字,进入normal模式移动光标到下一行,再回到插入模式继续使用中文编辑.</li>
 </ul>
 </li>
 <li><p>上面两个命令在每次IDEA重启后都需要重新输入,也可以通过在用户目录下添加<code>.ideavimrc</code>文件,将命令添加到该文件中,这样在IDEA重启时可以自动执行该文件中的指令.另外,该文件中也可以添加其他<a href="https://github.com/JetBrains/ideavim/blob/master/doc/set-commands.md" target="_blank" rel="noopener">受支持的vim指令</a>.类似vim的<code>.vimrc</code>文件.</p>
+</li>
+<li><p>如果要关闭输入法切换功能直接直接输入对应的<code>:set nokeep-english-in-normal[-and-restore-in-insert]</code></p>
 </li>
 </ol>
 <p>接下来就可以愉快的使用全键盘操作来编写代码了.</p>

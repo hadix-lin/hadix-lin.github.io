@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.1.0">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"hadix-lin.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.11.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
+<meta property="og:type" content="article">
+<meta property="og:title" content="发布构件到maven中央仓">
+<meta property="og:url" content="https://hadix-lin.github.io/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/index.html">
+<meta property="og:site_name" content="hadix&#39; Konwledge Index">
+<meta property="og:description" content="引言如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布springfox-plus项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考. 可能您使用过公司的maven仓库,按照公司的流程,可以很容通过maven deploy将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png">
+<meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf170e63a672418.png">
+<meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf17248c0b82591.png">
+<meta property="og:image" content="https://i.loli.net/2019/05/15/5cdaf1737f70f93934.png">
+<meta property="article:published_time" content="2019-04-27T12:50:00.000Z">
+<meta property="article:modified_time" content="2019-05-28T06:41:04.000Z">
+<meta property="article:author" content="hadix">
+<meta property="article:tag" content="tutorial">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png">
+
+
+<link rel="canonical" href="https://hadix-lin.github.io/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://hadix-lin.github.io/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/","path":"2019/04/27/发布构件到maven中央仓库/","title":"发布构件到maven中央仓"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>发布构件到maven中央仓 | hadix' Konwledge Index</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?eb0180d9d8c34a440a7d05bcaf981b97"></script>
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="hadix' Konwledge Index" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">hadix' Konwledge Index</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP1-%E6%B3%A8%E5%86%8CSonatype%E7%9A%84JIRA%E5%B8%90%E6%88%B7%E5%B9%B6%E5%8F%91%E5%B8%83ISSUE"><span class="nav-number">2.</span> <span class="nav-text">STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SETP2-%E9%85%8D%E7%BD%AE%E6%82%A8%E7%9A%84POM-%E4%BB%A4%E6%82%A8%E7%9A%84%E9%A1%B9%E7%9B%AE%E6%BB%A1%E8%B6%B3%E5%85%88%E5%86%B3%E6%9D%A1%E4%BB%B6"><span class="nav-number">3.</span> <span class="nav-text">SETP2 : 配置您的POM,令您的项目满足先决条件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%88%E5%86%B3%E6%9D%A1%E4%BB%B6"><span class="nav-number">3.1.</span> <span class="nav-text">先决条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E6%BB%A1%E8%B6%B3%E4%B8%8A%E8%BF%B0%E6%9D%A1%E4%BB%B6-%E7%BC%96%E5%86%99%E5%A6%82%E4%B8%8B%E7%9A%84pom%E6%96%87%E4%BB%B6"><span class="nav-number">3.2.</span> <span class="nav-text">为满足上述条件,编写如下的pom文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%86%E5%A4%87GPG%E7%AD%BE%E5%90%8D%E5%AF%86%E9%92%A5"><span class="nav-number">3.3.</span> <span class="nav-text">准备GPG签名密钥</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP3-%E5%8F%91%E5%B8%83%E5%88%B0sonatype%E4%BB%93%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">STEP3 : 发布到sonatype仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STEP4-%E5%9B%9E%E5%A4%8DISSUE%E6%9D%A5%E5%8F%91%E8%B5%B7%E5%90%8C%E6%AD%A5"><span class="nav-number">5.</span> <span class="nav-text">STEP4 : 回复ISSUE来发起同步</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">hadix</p>
+  <div class="site-description" itemprop="description">hadix的知识索引</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="sidebar-button site-overview-item animated">
+    <button><i class="fa fa-comment"></i>
+      Chat
+    </button>
+  </div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hadix-lin" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hadix-lin" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:hadixlin@gmail.com" title="E-Mail → mailto:hadixlin@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/hadix-lin" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="hadix">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Konwledge Index">
+      <meta itemprop="description" content="hadix的知识索引">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="发布构件到maven中央仓 | hadix' Konwledge Index">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          发布构件到maven中央仓
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-04-27 20:50:00" itemprop="dateCreated datePublished" datetime="2019-04-27T20:50:00+08:00">2019-04-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2019-05-28 14:41:04" itemprop="dateModified" datetime="2019-05-28T14:41:04+08:00">2019-05-28</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布<a target="_blank" rel="noopener" href="https://github.com/hadix-lin/springfox-plus">springfox-plus</a>项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考.</p>
+<p>可能您使用过公司的maven仓库,按照公司的流程,可以很容通过<code>maven deploy</code>将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将构件发布到授信的第三方仓库,经过审核后才能同步到中央仓库.</p>
+<p>本文选择的第三方仓库是<a target="_blank" rel="noopener" href="https://central.sonatype.org/">sonatype</a>.它也是中央仓库的管理者.英文好的朋友可以自行到它的网站上去看详尽的<a target="_blank" rel="noopener" href="https://central.sonatype.org/pages/producers.html">发布说明</a>.本文涵盖的内容除了基本的发布方法外,还包含我遇到的麻烦的解决方法.所以依然对您有参考价值.</p>
+<h2 id="STEP1-注册Sonatype的JIRA帐户并发布ISSUE"><a href="#STEP1-注册Sonatype的JIRA帐户并发布ISSUE" class="headerlink" title="STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE"></a>STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</h2><ol>
+<li><p>到<a target="_blank" rel="noopener" href="https://issues.sonatype.org/secure/Signup!default.jspa">sonatype的页面</a>注册一个账号.一个常规的简单表单,将邮箱,用户名,密码按要求填好即可.</p>
+<p>注册成功后,使用该账号进行登陆.可以看到如下的界面</p>
+<p><img src="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png" alt="image-20190423002605866"></p>
+</li>
+<li><p>按照上图说明,点击按钮后会弹出创建ISSUE的界面</p>
+</li>
+</ol>
+<p>  <img src="https://i.loli.net/2019/05/15/5cdaf170e63a672418.png" alt="image-20190423003718569"> </p>
+<p>  这个图里面的字段都是必填的,实际的界面还会多一些选填的内容.</p>
+<ul>
+<li>Summary : 项目的简介(一句话描述)</li>
+<li>Group Id : 这个比较有讲究,必须是你管理的域名的倒置,例如我的Github Pages域名<code>hadix-lin.github.io</code>,那么我的GroupId为<code>io.github.hadix-lin</code></li>
+<li>Project URL : 项目的主页地址,github可以直接填你的项目地址,例如:<a target="_blank" rel="noopener" href="https://github.com/hadix-lin/springfox-plus">https://github.com/hadix-lin/springfox-plus</a></li>
+<li>SCM url : 源码控制系统地址,例如:<a target="_blank" rel="noopener" href="https://github.com/hadix-lin/springfox-plus.git">https://github.com/hadix-lin/springfox-plus.git</a></li>
+<li>Project : 按图选择即可(社区支持的开源项目)</li>
+<li>Issue Type : 按图选择即可(新项目)</li>
+<li>Already Synced to Central : 您的项目是否已经通过其他方式同步到中央仓库了.选择<code>No</code>.</li>
+</ul>
+<p>  界面上的其他选填内容,按需填写即可.</p>
+<p>  ISSUE创建成功后进入如下图页面</p>
+<p>  <img src="https://i.loli.net/2019/05/15/5cdaf17248c0b82591.png" alt="image-20190424225424590"></p>
+<p>  主要关注评论部分,如果之前表单填写的内容不规范,会在评论区里收到反馈,按要求编辑修改ISSUE即可.例如途中第一条评论告知我填写的groupId不和规范,并给了我建议的写法.</p>
+<p>  ISSUE正确后,过一段时间会收到类似图中的第二条评论,告知您现在可以向仓库提交构件了.</p>
+<h2 id="SETP2-配置您的POM-令您的项目满足先决条件"><a href="#SETP2-配置您的POM-令您的项目满足先决条件" class="headerlink" title="SETP2 : 配置您的POM,令您的项目满足先决条件"></a>SETP2 : 配置您的POM,令您的项目满足先决条件</h2><h3 id="先决条件"><a href="#先决条件" class="headerlink" title="先决条件"></a>先决条件</h3><p>您的开源项目必须符合以下条件才能允许被发布:</p>
+<ol>
+<li><p>提供javadoc和源代码包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">example-application-1.4.7-sources.jar</span><br><span class="line">example-application-1.4.7-javadoc.jar</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>所有发布的文件必须使用GPG签名</p>
+<p>所有的文件使用GPG签名后,将签名内容存放在<code>.asc</code>文件中,例如:您的项目包含如下文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">example-application-1.4.7.pom</span><br><span class="line">example-application-1.4.7.jar</span><br><span class="line">example-application-1.4.7-sources.jar</span><br><span class="line">example-application-1.4.7-javadoc.jar</span><br></pre></td></tr></table></figure>
+
+<p>那么得到的签名文件如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">example-application-1.4.7.pom.asc</span><br><span class="line">example-application-1.4.7.jar.asc</span><br><span class="line">example-application-1.4.7-sources.jar.asc</span><br><span class="line">example-application-1.4.7-javadoc.jar.asc</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>POM文件中要包含足够的元数据</p>
+<ul>
+<li>正确的坐标GAV(<code>&lt;groupId&gt;,&lt;artifactId&gt;,&lt;version&gt;</code>)</li>
+<li>项目名称<code>&lt;name&gt;</code>, 描述<code>&lt;description&gt;</code> 和项目主页地址<code>&lt;url&gt;</code></li>
+<li>许可证信息<code>&lt;licenses&gt;</code></li>
+<li>开发者信息<code>&lt;developers&gt;</code></li>
+<li>源码控制系统(SCM)信息<code>&lt;scm&gt;</code></li>
+</ul>
+</li>
+</ol>
+<p>文章最后会提供我的<a target="_blank" rel="noopener" href="https://github.com/hadix-lin/springfox-plus">springfox-plus</a>的pom文件供参考.</p>
+<h3 id="为满足上述条件-编写如下的pom文件"><a href="#为满足上述条件-编写如下的pom文件" class="headerlink" title="为满足上述条件,编写如下的pom文件"></a>为满足上述条件,编写如下的pom文件</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.hadix-lin<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-plus-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>springfox-plus<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>An extension of SpringFox that supports read javadoc as API document<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://github.com/hadix-lin/springfox-plus<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 项目使用的许可证 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">licenses</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">license</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>The Apache Software License, Version 2.0<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://www.apache.org/licenses/LICENSE-2.0.txt<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">license</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">licenses</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 开发者 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">developers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">developer</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadix<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">email</span>&gt;</span>hadix.lin@gmail.com<span class="tag">&lt;/<span class="name">email</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">developer</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">developers</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 源码控制管理系统 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">scm</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">connection</span>&gt;</span>scm:git@github.com:hadix-lin/springfox-plus.git<span class="tag">&lt;/<span class="name">connection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">developerConnection</span>&gt;</span>scm:git@github.com:hadix-lin/springfox-plus.git<span class="tag">&lt;/<span class="name">developerConnection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://github.com/hadix-lin/springfox-plus<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">scm</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 项目的依赖 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependencies</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 这里使用一个profile来管理发布时的构建插件 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">profiles</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>release<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 打源码包 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-source-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>jar-no-fork<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 打javadoc包 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-javadoc-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">show</span>&gt;</span>private<span class="tag">&lt;/<span class="name">show</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">nohelp</span>&gt;</span>true<span class="tag">&lt;/<span class="name">nohelp</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">charset</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">charset</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">encoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">encoding</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">docencoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">docencoding</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 对构件进行GPG签名 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-gpg-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>verify<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>sign<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            nexus-staging 这个插件用于在最后执行一些仓库操作</span></span><br><span class="line"><span class="comment">            这些操作也可以手动在sonatype的仓库上进行,但是相对繁琐,推荐使用插件.</span></span><br><span class="line"><span class="comment">            手动操作不在本文进行描述,可以自行查阅[文档](https://central.sonatype.org/pages/releasing-the-deployment.html)</span></span><br><span class="line"><span class="comment">           --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.sonatype.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>nexus-staging-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6.8<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">extensions</span>&gt;</span>true<span class="tag">&lt;/<span class="name">extensions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">serverId</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">serverId</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">nexusUrl</span>&gt;</span>https://oss.sonatype.org/<span class="tag">&lt;/<span class="name">nexusUrl</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">autoReleaseAfterClose</span>&gt;</span>true<span class="tag">&lt;/<span class="name">autoReleaseAfterClose</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- 配置发布的仓库 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://oss.sonatype.org/content/repositories/snapshots/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://oss.sonatype.org/service/local/staging/deploy/maven2/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">profiles</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上面的pom文件是从我的项目中截取的,全文可以看<a target="_blank" rel="noopener" href="https://github.com/hadix-lin/springfox-plus/blob/master/pom.xml">这里</a></p>
+<p>另外还要在您的全局maven配置中添加如下内容</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servers</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 这个id要跟上面pom中配置的repository的id一致 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 用户名/密码就是您在上面注册得到的 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>用户名<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>密码<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servers</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="准备GPG签名密钥"><a href="#准备GPG签名密钥" class="headerlink" title="准备GPG签名密钥"></a>准备GPG签名密钥</h3><p>上文中配置的maven-gpg-plugin需要本机配置好GPG密钥,GPG是一种非对称加密算法,密钥要公钥私钥,公钥需要上传到公钥服务器上,私钥安装在本地.</p>
+<p>在macOS下通过brew安装gpg命令,然后生成密钥:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">brew install gpg</span><br><span class="line"><span class="comment"># 检查是否安装成功</span></span><br><span class="line">gpg --version </span><br><span class="line"><span class="comment"># 生成密钥</span></span><br><span class="line">gpg --gen-key</span><br><span class="line"><span class="comment"># 之后会在命令行中以交互模式让你填写姓名,邮箱等等信息,最后输入两次用于保护密钥的密码</span></span><br><span class="line"><span class="comment"># 然后使用如下命令查看生成的密钥</span></span><br><span class="line">gpg --list-keys</span><br><span class="line"><span class="comment"># 如下输出</span></span><br><span class="line"><span class="comment"># /Users/hadix/.gnupg/pubring.kbx -&gt; 密钥文件,内含私钥</span></span><br><span class="line"><span class="comment"># -------------------------------</span></span><br><span class="line"><span class="comment"># pub   rsa2048 2019-04-21 [SC] [expires: 2021-04-20]</span></span><br><span class="line"><span class="comment">#       58FD688CA40BE2002C1B68C848492F673D89A858 --&gt;公钥</span></span><br><span class="line"><span class="comment"># uid           [ultimate] hadix &lt;hadix.lin@gamil.com&gt;</span></span><br><span class="line"><span class="comment"># sub   rsa2048 2019-04-21 [E] [expires: 2021-04-20]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后将公钥发布到密钥服务器</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net --send-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 如果发布失败请尝试如下命令</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net:80 --send-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 检查是否发布成功</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 如果失败请尝试如下命令</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys &lt;您的公钥&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="STEP3-发布到sonatype仓库"><a href="#STEP3-发布到sonatype仓库" class="headerlink" title="STEP3 : 发布到sonatype仓库"></a>STEP3 : 发布到sonatype仓库</h2><p>上面已经配置好了maven的pom文件,可以直接使用如下命令进行发布</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mvn clean deploy -P release</span><br><span class="line"><span class="comment"># 如果构件过程中无法正确生成gpg签名,出现类似&quot;Exit Code 2&quot;的错误,那么请执行如下命令</span></span><br><span class="line"><span class="built_in">export</span> GPG_TTY=$(<span class="built_in">tty</span>)</span><br><span class="line">mvn clean deploy -P release</span><br><span class="line"><span class="comment"># 执行成功后 由于我们在上面的pom文件中配置了&lt;autoReleaseAfterClose&gt;true&lt;/autoReleaseAfterClose&gt;</span></span><br><span class="line"><span class="comment"># maven构件过程会自动进行release构件上架</span></span><br></pre></td></tr></table></figure>
+
+<p>如果您的项目版本号是以<code>-SNAPSHOT</code>结尾,那么构件将发布到snapshot仓库,不会同步到中央仓库.</p>
+<p>如果您的项目构建不满足上文中的先决条件,那么上述命令会返回类似如下的输出</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[ERROR] Rule failure <span class="keyword">while</span> trying to close staging repository with ID <span class="string">&quot;iogithubhadix-lin-1002&quot;</span>.</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Nexus Staging Rules Failure Report</span><br><span class="line">[ERROR] ==================================</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Repository <span class="string">&quot;iogithubhadix-lin-1002&quot;</span> failures</span><br><span class="line">[ERROR]   Rule <span class="string">&quot;pom-staging&quot;</span> failures</span><br><span class="line">[ERROR]     * Invalid POM: /io/github/hadix-lin/http/1.0/http-1.0.pom: Project name missing, Project description missing, Project URL missing</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Cleaning up <span class="built_in">local</span> stage directory after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Deleting context ac894b84a446a7.properties</span><br><span class="line">[ERROR] Cleaning up remote stage repositories after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Dropping failed staging repository with ID <span class="string">&quot;iogithubhadix-lin-1002&quot;</span> (Rule failure during close of staging repositories: [iogithubhadix-lin-1002]).</span><br></pre></td></tr></table></figure>
+
+<p>按提示修改项目的pom文件即可.例如上面这段错误信息提示我的项目没有<code>Project name</code>.在pom中增加<code>&lt;name&gt;http&lt;/name&gt;</code>即可.</p>
+<h2 id="STEP4-回复ISSUE来发起同步"><a href="#STEP4-回复ISSUE来发起同步" class="headerlink" title="STEP4 : 回复ISSUE来发起同步"></a>STEP4 : 回复ISSUE来发起同步</h2><p>首次发布构件的时候,是不会自动同步到中央仓库的.当上面的步骤全部执行成功后,需要找到最初创建的ISSUE页面.在评论区用英文写一条评论,比如”the first release version(0.0.1) uploaded via maven”.然后耐心等待,会收到回复.像下面图中的样子.</p>
+<p><img src="https://i.loli.net/2019/05/15/5cdaf1737f70f93934.png" alt="image-20190427204606484"></p>
+<p>以后只要是同一个groupId的构件发布就不需要再来回复了.发布后过差不多两个小时就会自动同步到中央仓库.</p>
+<p>如果要发不不同groupId的构件,那么请重复STEP1中创建ISSUE的操作.</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="followme">
+  <span>Welcome to my other publishing channels</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+        <a target="_blank" class="social-link" href="/atom.xml">
+          <span class="icon">
+            <i class="fa fa-rss"></i>
+          </span>
+
+          <span class="label">RSS</span>
+        </a>
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/tutorial/" rel="tag"># tutorial</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/04/23/Deeply-Nested-Code/" rel="prev" title="Code Smell : Deeply Nested Code : 深度嵌套的代码">
+                  <i class="fa fa-chevron-left"></i> Code Smell : Deeply Nested Code : 深度嵌套的代码
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/05/10/%E6%94%B9%E5%96%84%E7%BC%96%E7%A8%8B%E4%BD%93%E9%AA%8C-IdeaVimExtension%E4%BB%8B%E7%BB%8D/" rel="next" title="改善编程体验: IdeaVimExtension介绍">
+                  改善编程体验: IdeaVimExtension介绍 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hadix</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+<script class="next-config" data-name="chatra" type="application/json">{"enable":true,"async":true,"id":"9zyGaD8hmhm9bEGFr"}</script>
+<script src="/js/third-party/chat/chatra.js"></script>
+<script async src="https://call.chatra.io/chatra.js"></script>
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js","integrity":"sha256-7wT34TI0pEBeEFoi4z+vhuSddGh6vUTMWdqJ2SDe2jg="}}</script>
+  <script src="/js/third-party/tags/mermaid.js"></script>
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Code Smell : Deeply Nested Code : 深度嵌套的代码</title>
+    <url>/2019/04/23/Deeply-Nested-Code/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在类似Java的语言中,非常容易见到多层嵌套的for循环和if条件判断判断,特别是在Java8出现以前.这类代码对于维护低级的数据结构(arrays,collection,…)来说是完全可以接受的.但是当这样的代码出现在你的业务领域代码中时,就会令你的代码<strong>恶丑无比</strong>,特别是嵌套很深的时候.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li><p>深层嵌套的代码(超过1层,就要注意,超过2层就会开始发臭),通常是for&#x2F;while循环和if条件判断.</p>
+<p>通过代码的缩进程度可以很明显的嗅到臭味.</p>
+</li>
+<li><p>链式调用的getter方法.加入一个链式调用的语句中,每个调用都是getter方法,那么也应当视为一个深层嵌套的情况.</p>
+<blockquote>
+<p> Builder模式或其他Domain-DSL的链式调用情况除外.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li><p>嵌套的for循环往往是通过遍历数据结构来检查是否满足业务逻辑或提取部分数据进行后续处理.可以考虑将检查数据的代码放入持有该数据结构的的对象中,然后通过一个良好命名的方法来回答其他对象的问题.</p>
+</li>
+<li><p>检查你的代码,考虑数据结构是否需要直接泄露给其他类.对数据的处理和职责是否可以限定在持有类中,然后通过helper方法提供给其他类进行操作.这样可以将对数据的处理逻辑放置在靠近数据结构的地方,提高代码内聚性.</p>
+</li>
+<li><p><a href="https://martinfowler.com/bliki/EncapsulatedCollection.html">集合封装</a>:使用这种模式意味着你正在将一种数据结构当做领域对象来使用,考虑将这种数据结构封装在领域对象自身中,与其暴露内部实现,不如通过提供helper方法来解决其他业务对象的问题.</p>
+</li>
+</ul>
+<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> MappedField <span class="title function_">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">final</span> MappedField mf : persistenceFields) &#123;</span><br><span class="line">    <span class="comment">// 可以将内嵌的循环直接放入MappedField中</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> String n : mf.getLoadNames()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (storedName.equals(n)) &#123;</span><br><span class="line">          <span class="keyword">return</span> mf;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 改为如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MappedField</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> List&lt;String&gt; loadNames = ...;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasName</span><span class="params">(String storedName)</span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> String n : mf.getLoadNames()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (storedName.equals(n)) &#123;</span><br><span class="line">        <span class="keyword">return</span> mf;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 使用Java8可以定义为如下</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasName</span><span class="params">(String storedName)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> getLoadNames().stream().anyMatch(Objects::equals);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> MappedField <span class="title function_">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">final</span> MappedField mf : persistenceFields) &#123;</span><br><span class="line">    <span class="keyword">if</span>(mf.hasName(storedName))&#123;</span><br><span class="line">      <span class="keyword">return</span> mf;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用Java8可以定义为如下</span></span><br><span class="line"><span class="keyword">public</span> MappedField <span class="title function_">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> &#123;</span><br><span class="line">  persistenceFields.stream()</span><br><span class="line">    .filter(mf-&gt;mf.hasName(storedName))</span><br><span class="line">    .findFirst()</span><br><span class="line">    .orElse(<span class="literal">null</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 避免Null-Smell可以改为直接返回Optional</span></span><br><span class="line"><span class="keyword">public</span> Optional&lt;MappedField&gt; <span class="title function_">getMappedField</span><span class="params">(<span class="keyword">final</span> String storedName)</span> &#123;</span><br><span class="line">  persistenceFields.stream()</span><br><span class="line">    .filter(mf-&gt;mf.hasName(storedName))</span><br><span class="line">    .findFirst();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Code Smell : If-Statements : 条件语句</title>
+    <url>/2019/04/23/If-Statements/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p><code>if</code>可能是代码中最常用的逻辑控制语句,但不合理的复杂的<code>if</code>会让代码变得冗长复杂难以理解.</p>
+<p><code>if</code>让代码的逻辑分支成指数级上升.不合理的<code>if</code>还会带来<strong>深层嵌套</strong>问题.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>过多的<code>if</code>语句</li>
+<li><code>if</code>语句缺少<code>else</code></li>
+<li>相同或类似的条件出现在多个<code>if</code>语句中</li>
+<li>多个<code>if</code>语句块中存在退出语句(抛异常,返回值),而且散落在代码各处</li>
+<li>多个<code>if</code>语句块中抛出了相同的异常内容.</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li><p>翻转逻辑.人们更容易理解正向逻辑,所以尽可能在<code>if</code>语句中使用正向条件判断.如果一定要使用逆向逻辑条件,请将该条件封装为一个方法并提供便于理解的方法名.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//逆向条件</span></span><br><span class="line"><span class="keyword">if</span>(! exists(something))&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构为正向,上面的代码在Intellij IDEA中会有高亮提示</span></span><br><span class="line"><span class="comment">//按下Alt+Enter可以在弹出的菜单中选择&quot;invert &#x27;if&#x27; condition&quot;,即可自动重构为下面的代码</span></span><br><span class="line"><span class="keyword">if</span>(exists(something))&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果前面的代码中已经对某个条件进行了判断(例如判断某个变量是否为<code>null</code>),那么后续代码中出现的相同判断都可以移除.</p>
+</li>
+<li><p>代码中通过一系列的<code>if</code>(without else)来控制流程,那么要思考一下是否可以通过通过添加<code>else</code>来简化流程.一系列的<code>if</code>表达所有的代码都可能会被执行,而<code>if-else</code>表达的是二选一来执行.<code>if-else</code>不仅简化了代码,令逻辑更容易理解,而且还提升了代码的执行效率.</p>
+</li>
+<li><p>一旦你减少了代码中对相同条件的重复判断,就可以将这些<code>if</code>语句块提取到具有良好明明的自解释的方法中.这可以极大的改善代码的可读性.</p>
+</li>
+<li><p>一些简单的校验或检查会导致提前退出或返回的代码,请放到方法的最顶端.这样代码读者可以清楚知道哪些代码不是主要逻辑可以跳过.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(args[length] &gt;= <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="comment">// some lang code;</span></span><br><span class="line">  doSomethingWith(args[<span class="number">0</span>]);</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//上述代码可以改为</span></span><br><span class="line"><span class="keyword">if</span>(args[length] &lt; <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// some lang code;</span></span><br><span class="line">doSomeThingWith(args[<span class="number">0</span>]);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将异常语句放在最后的<code>else</code>语句中,这样读者可以明确知道,这是在所有条件判断都失败的情况下做出的处理.</p>
+</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Code Smell : Iteration : 迭代</title>
+    <url>/2019/04/23/Iteration/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当你看到通过for循环或者streams-api遍历集合的代码时,需要明确知道迭代遍历是必须的(意味着对集合中的每个元素都进行了必要的逻辑处理).如果遍历一个数据结构总是为了从中查找某个值,那么最好将集合转换为Set或Map.这样做不仅可以令代码更简洁已读,而且还能提供更好的性能.</p>
+<p>每当选择使用一种数据结构时,都要考虑一下对该数据结构的<strong>更新(add&#x2F;update)<strong>或</strong>只读</strong>操作的频率,根据读写操作的占比和更新操作的类型来决定使用何种数据结构会更高效.举例来说:</p>
+<ul>
+<li>根据key寻找value当然是用Map</li>
+<li>检查value是否存在用Set</li>
+<li>使用索引进行随机写入使用ArrayList,顺序写入任意位置增删元素用LinkedList</li>
+<li>更多</li>
+</ul>
+<p>全部都是常识.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>使用for循环遍历列表来查找某个符合条件的值</li>
+<li>使用streams-api调用<code>findFirst/findAny/anyMatch</code></li>
+</ul>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><ul>
+<li><p>如果总是通过for循环遍历来检查某个值是否存在于List,可以想想List中的元素是否唯一,如果是可以使用Set进行替换.</p>
+</li>
+<li><p>如果总是查找一个具有特定属性值的对象,可以考虑使用以属性值为key的Map进行替换,可以提升查找效率.</p>
+</li>
+<li><p>java.util.Collections API提供了非常多有用的方法,如果你无法变更数据结果,可以考虑看看看Collections中有没有方法可以替换循环迭代的代码.例如:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//代码片段1</span></span><br><span class="line"><span class="keyword">for</span> (String s : getLoadNames()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (storedName.equals(s)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以改为如下代码</span></span><br><span class="line"><span class="keyword">return</span> Collections.contains(getLoadNames,storedName);</span><br><span class="line"></span><br><span class="line"><span class="comment">//代码片段2</span></span><br><span class="line">Iterator&lt;String&gt; iter = getLoadNames().iterator();</span><br><span class="line"><span class="keyword">while</span>(iter.hasNext())&#123;</span><br><span class="line">  <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> iter.next();</span><br><span class="line">  <span class="keyword">if</span>(storedName.equals())&#123;</span><br><span class="line">    iter.remove();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以改为</span></span><br><span class="line">Collections.removeIf(name-&gt;storedName.equals(name))</span><br></pre></td></tr></table></figure>
+
+<p>示例代码中的转换,IntellijIdea IDE提供了快速识别转换的能力,通常在编辑器中会自动标注可以转换的代码,只需要按下Alt+Enter就可以快速转换为Collections API代码.</p>
+</li>
+<li><p>如果确实需要对数据结构进行遍历,最好将遍历代码封装的业务领域对象的方法中,然后给它起一个容易识别的名字.</p>
+</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Code Smell: Multi-Responsibility Methods : 多职责方法</title>
+    <url>/2019/04/23/Multi-Responsibility-Methods/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当我们发现一个过长的方法时,通常会想要将之拆分为几个小方法.在某些情况下这非常容易,例如:一个很长的方法有很多参数,这些参数可以明显分为两组,一组只在方法的前一半使用,另一组在后一半使用.可以很明确地知道在什么位置将长方法拆成两个小方法.</p>
+<p>有类似这种表现的方法通常都具有多重职责,逻辑十分复杂.在上面的举例中,虽然可以很明确知道在什么位置将代码拆开,但是可能前半部分会有多个返回值,需要传递给后半部分.</p>
+<p>复杂的方法不仅逻辑很难理解,也很难重构,几乎不可能重用.后续的维护多半只能是重写.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>方法参数可以分组,分别在方法代码中不重合的段落中使用.例如三个用在前半部分,两个用在后半部分.</li>
+<li>Boolean类型的参数用来控制方法中某些代码块的开关.</li>
+<li>方法中的一部分只是用来计算一个值供另外一部分使用.</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>将明显的代码块拆分为单独的方法(例如一个检查Boolean类型参数的if语句块)</li>
+<li>如果两个构造函数没有重合的参数,且非常复杂.那么可以将这个类拆分为两个单独的类.</li>
+</ul>
+<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> ValidatedField <span class="title function_">validateQuery</span><span class="params">(Class clazz, Mapper mapper, String propertyName, FilterOperator op,</span></span><br><span class="line"><span class="params">                                    Object val, <span class="type">boolean</span> validateNames, <span class="type">boolean</span> validateTypes)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">ValidatedField</span> <span class="variable">validatedField</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ValidatedField</span>(propertyName);</span><br><span class="line">    <span class="keyword">if</span> (!propertyName.startsWith(<span class="string">&quot;$&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">final</span> String[] pathElements = propertyName.split(<span class="string">&quot;\\.&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> List&lt;String&gt; databasePathElements = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(asList(pathElements));</span><br><span class="line">        <span class="keyword">if</span> (clazz == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> validatedField;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">MappedClass</span> <span class="variable">mc</span> <span class="operator">=</span> mapper.getMappedClass(clazz);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; ; ) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">String</span> <span class="variable">fieldName</span> <span class="operator">=</span> pathElements[i];</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">fieldIsArrayOperator</span> <span class="operator">=</span> fieldName.equals(<span class="string">&quot;$&quot;</span>);</span><br><span class="line">            <span class="keyword">final</span> Optional&lt;MappedField&gt; mf = getMappedField(fieldName, mc, databasePathElements,</span><br><span class="line">                                                            i, propertyName, validateNames,</span><br><span class="line">                                                            fieldIsArrayOperator);</span><br><span class="line">            validatedField.mappedField = mf;</span><br><span class="line"></span><br><span class="line">            i++;</span><br><span class="line">            <span class="keyword">if</span> (mf.isPresent() &amp;&amp; mf.get().isMap()) &#123;</span><br><span class="line">                <span class="comment">//skip the map key validation, and move to the next fieldName</span></span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (i &gt;= pathElements.length) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!fieldIsArrayOperator) &#123;</span><br><span class="line">                <span class="comment">//catch people trying to search/update into @Reference/@Serialized fields</span></span><br><span class="line">                <span class="keyword">if</span> (validateNames &amp;&amp; !canQueryPast(mf.get())) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;Cannot use dot-notation past &#x27;%s&#x27; in &#x27;%s&#x27;; found while validating - %s&quot;</span>,</span><br><span class="line">                             fieldName, mc.getClazz().getName(), propertyName));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!mf.isPresent() &amp;&amp; mc.isInterface()) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!mf.isPresent()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;The field &#x27;%s&#x27; could not be found in &#x27;%s&#x27;&quot;</span>, propertyName, </span><br><span class="line">                             mc.getClazz().getName()));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//get the next MappedClass for the next field validation</span></span><br><span class="line">                <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> mf.get();</span><br><span class="line">                mc = mapper.getMappedClass((mappedField.isSingleValue()) </span><br><span class="line">                                           ? mappedField.getType() </span><br><span class="line">                                           : mappedField.getSubClass());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//record new property string</span></span><br><span class="line">        validatedField.databasePath = databasePathElements.stream().collect(joining(<span class="string">&quot;.&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (validateTypes &amp;&amp; validatedField.mappedField.isPresent()) &#123;</span><br><span class="line">            <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> validatedField.mappedField.get();</span><br><span class="line">            List&lt;ValidationFailure&gt; typeValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForType</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getType(), op, val, typeValidationFailures);</span><br><span class="line">            List&lt;ValidationFailure&gt; subclassValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForSubclass</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getSubClass(), op, val, subclassValidationFailures);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ((mappedField.isSingleValue() &amp;&amp; !compatibleForType)</span><br><span class="line">                 || mappedField.isMultipleValues() &amp;&amp; !(compatibleForSubclass || compatibleForType)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (LOG.isWarningEnabled()) &#123;</span><br><span class="line">                    LOG.warning(</span><br><span class="line">                      format(<span class="string">&quot;The type(s) for the query/update may be inconsistent; &quot;</span></span><br><span class="line">                             +<span class="string">&quot;using an instance of type &#x27;%s&#x27; for the field &#x27;%s.%s&#x27;&quot;</span></span><br><span class="line">                             +<span class="string">&quot; which is declared as &#x27;%s&#x27;&quot;</span>,</span><br><span class="line">                             val.getClass().getName(), mappedField.getDeclaringClass().getName(),</span><br><span class="line">                             mappedField.getJavaFieldName(), mappedField.getType().getName()));</span><br><span class="line">                    typeValidationFailures.addAll(subclassValidationFailures);</span><br><span class="line">                    LOG.warning(<span class="string">&quot;Validation warnings: \n&quot;</span> + typeValidationFailures);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> validatedField;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一步,观察11-48行,这段代码计算了<code>MapperClass mc</code>的值供后面的代码使用,可以拆解出来.</p>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Code Smell: Mutation : 突变</title>
+    <url>/2019/04/23/Mutation/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
+<ul>
+<li>类的字段导致对象状态是可变的</li>
+<li>方法的参数&#x2F;局部变量可以重复赋值</li>
+<li>集合容器的内容可变</li>
+</ul>
+<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>对变量不只一次赋值</li>
+<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
+<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
+<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
+<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
+<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
+<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
+<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Code Smell : Null : 空值</title>
+    <url>/2019/04/23/Null/</url>
+    <content><![CDATA[<h2 id="Null表示什么"><a href="#Null表示什么" class="headerlink" title="Null表示什么?"></a>Null表示什么?</h2><p>我们的代码用Null表示了太多的事情:</p>
+<ul>
+<li>有意或无意导致的从未初始化的值</li>
+<li>无效值&#x2F;不需要的值</li>
+<li>值不存在(比如从数据库中查找不到)</li>
+<li>可能出现了严重的错误导致本该存在的值没有了</li>
+<li>其他各种情况</li>
+</ul>
+<p>由于上述种种,NPE总是时不时出现在我们的程序中.NPE导致的BUG也数不胜数,没见过NPE的程序员估计还没出生.</p>
+<p>Null是个尤其难解决的问题,主要原因是开发人员很难明确的知道Null表达的实际意义.从字面上看Null表示没有任何含义的值.但用它来表达上面的任何情况都不足够清楚.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><p>当Null在你的程序里面成为顽疾,往往会有如下症状.</p>
+<ul>
+<li><p>随处可见的Null检查<code>if(xx != null)</code>.</p>
+<p>这种情况说明开发人员不清楚传递的变量为null的意义,只能无奈的做防御式Null检查.</p>
+<p>开发人员永远不知道返回值是否可能为null,也永远无法保证在所有地方都使用的Null检查.</p>
+</li>
+<li><p>方法直接使用<code>return null</code></p>
+</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>Java8+或guava的<code>Optional</code>,它虽然不是处理一切Null问题的银弹,但是当一个<code>public</code>方法通过明确返回<code>null</code>来表示效果不存在时,使用<code>Optional</code>是更好的方案.</li>
+<li><code>@NotNull/@Nullable</code>在Intellij,guava,lombok,jsr305中都提供了这样的注解,Intellij IDEA对这些注解的提供了编码时检查.在IDE里面查看一个方法,将<code>@NotNull</code>临时添加在参数前,IDE会告知你该参数是否有被传递null值,如果没有,那么你可以去掉该注解,然后在Javadoc中加入参数不能为null的说明.当然如果你愿意保留<code>@NotNull</code>注解,可以更显著地提醒代码的维护人员,但是需要引入一个注解依赖.</li>
+<li>在异常处理中返回null是非常不友好的,调用者往往不希望收到null值,进而导致NPE.整个过程缺少对错误信息的描述.应当改为抛出一个具有描述信息的异常,这对发现错误和分析问题更有价值.</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果方法可能返回null,那么考虑改为返回<code>Optional</code>.</p>
+<p>方法的参数通过<code>@NotNull/@Nullable</code>来告知调用者是否允许传递null值,同时为IDE的静态代码分析提供帮助.</p>
+<p>异常处理中永远不要返回null值,改为抛出具有描述信息的异常.</p>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Code Smell : Too Many Problems : 太多的问题</title>
+    <url>/2019/04/23/Too-Many-Problems/</url>
+    <content><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
+<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
+<ol>
+<li>将方法拆分多个相对更短的代码段</li>
+<li>针对每个方法处理异味,但一次仅针对一种异味</li>
+<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
+</ol>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>非常长或复杂的方法或类.</li>
+<li>当你大概流量代码时能够发现多种异味.</li>
+<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>将代码拆分为多个段落</li>
+<li>一次仅尝试修复一种异味</li>
+<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
+<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>发布构件到maven中央仓</title>
+    <url>/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/</url>
+    <content><![CDATA[<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布<a href="https://github.com/hadix-lin/springfox-plus">springfox-plus</a>项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考.</p>
+<p>可能您使用过公司的maven仓库,按照公司的流程,可以很容通过<code>maven deploy</code>将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将构件发布到授信的第三方仓库,经过审核后才能同步到中央仓库.</p>
+<p>本文选择的第三方仓库是<a href="https://central.sonatype.org/">sonatype</a>.它也是中央仓库的管理者.英文好的朋友可以自行到它的网站上去看详尽的<a href="https://central.sonatype.org/pages/producers.html">发布说明</a>.本文涵盖的内容除了基本的发布方法外,还包含我遇到的麻烦的解决方法.所以依然对您有参考价值.</p>
+<h2 id="STEP1-注册Sonatype的JIRA帐户并发布ISSUE"><a href="#STEP1-注册Sonatype的JIRA帐户并发布ISSUE" class="headerlink" title="STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE"></a>STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</h2><ol>
+<li><p>到<a href="https://issues.sonatype.org/secure/Signup!default.jspa">sonatype的页面</a>注册一个账号.一个常规的简单表单,将邮箱,用户名,密码按要求填好即可.</p>
+<p>注册成功后,使用该账号进行登陆.可以看到如下的界面</p>
+<p><img src="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png" alt="image-20190423002605866"></p>
+</li>
+<li><p>按照上图说明,点击按钮后会弹出创建ISSUE的界面</p>
+</li>
+</ol>
+<p>  <img src="https://i.loli.net/2019/05/15/5cdaf170e63a672418.png" alt="image-20190423003718569"> </p>
+<p>  这个图里面的字段都是必填的,实际的界面还会多一些选填的内容.</p>
+<ul>
+<li>Summary : 项目的简介(一句话描述)</li>
+<li>Group Id : 这个比较有讲究,必须是你管理的域名的倒置,例如我的Github Pages域名<code>hadix-lin.github.io</code>,那么我的GroupId为<code>io.github.hadix-lin</code></li>
+<li>Project URL : 项目的主页地址,github可以直接填你的项目地址,例如:<a href="https://github.com/hadix-lin/springfox-plus">https://github.com/hadix-lin/springfox-plus</a></li>
+<li>SCM url : 源码控制系统地址,例如:<a href="https://github.com/hadix-lin/springfox-plus.git">https://github.com/hadix-lin/springfox-plus.git</a></li>
+<li>Project : 按图选择即可(社区支持的开源项目)</li>
+<li>Issue Type : 按图选择即可(新项目)</li>
+<li>Already Synced to Central : 您的项目是否已经通过其他方式同步到中央仓库了.选择<code>No</code>.</li>
+</ul>
+<p>  界面上的其他选填内容,按需填写即可.</p>
+<p>  ISSUE创建成功后进入如下图页面</p>
+<p>  <img src="https://i.loli.net/2019/05/15/5cdaf17248c0b82591.png" alt="image-20190424225424590"></p>
+<p>  主要关注评论部分,如果之前表单填写的内容不规范,会在评论区里收到反馈,按要求编辑修改ISSUE即可.例如途中第一条评论告知我填写的groupId不和规范,并给了我建议的写法.</p>
+<p>  ISSUE正确后,过一段时间会收到类似图中的第二条评论,告知您现在可以向仓库提交构件了.</p>
+<h2 id="SETP2-配置您的POM-令您的项目满足先决条件"><a href="#SETP2-配置您的POM-令您的项目满足先决条件" class="headerlink" title="SETP2 : 配置您的POM,令您的项目满足先决条件"></a>SETP2 : 配置您的POM,令您的项目满足先决条件</h2><h3 id="先决条件"><a href="#先决条件" class="headerlink" title="先决条件"></a>先决条件</h3><p>您的开源项目必须符合以下条件才能允许被发布:</p>
+<ol>
+<li><p>提供javadoc和源代码包</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7-sources.jar</span><br><span class="line">example-application-1.4.7-javadoc.jar</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>所有发布的文件必须使用GPG签名</p>
+<p>所有的文件使用GPG签名后,将签名内容存放在<code>.asc</code>文件中,例如:您的项目包含如下文件:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7.pom</span><br><span class="line">example-application-1.4.7.jar</span><br><span class="line">example-application-1.4.7-sources.jar</span><br><span class="line">example-application-1.4.7-javadoc.jar</span><br></pre></td></tr></table></figure>
+
+<p>那么得到的签名文件如下:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7.pom.asc</span><br><span class="line">example-application-1.4.7.jar.asc</span><br><span class="line">example-application-1.4.7-sources.jar.asc</span><br><span class="line">example-application-1.4.7-javadoc.jar.asc</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>POM文件中要包含足够的元数据</p>
+<ul>
+<li>正确的坐标GAV(<code>&lt;groupId&gt;,&lt;artifactId&gt;,&lt;version&gt;</code>)</li>
+<li>项目名称<code>&lt;name&gt;</code>, 描述<code>&lt;description&gt;</code> 和项目主页地址<code>&lt;url&gt;</code></li>
+<li>许可证信息<code>&lt;licenses&gt;</code></li>
+<li>开发者信息<code>&lt;developers&gt;</code></li>
+<li>源码控制系统(SCM)信息<code>&lt;scm&gt;</code></li>
+</ul>
+</li>
+</ol>
+<p>文章最后会提供我的<a href="https://github.com/hadix-lin/springfox-plus">springfox-plus</a>的pom文件供参考.</p>
+<h3 id="为满足上述条件-编写如下的pom文件"><a href="#为满足上述条件-编写如下的pom文件" class="headerlink" title="为满足上述条件,编写如下的pom文件"></a>为满足上述条件,编写如下的pom文件</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.hadix-lin<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-plus-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>springfox-plus<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>An extension of SpringFox that supports read javadoc as API document<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://github.com/hadix-lin/springfox-plus<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 项目使用的许可证 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">licenses</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">license</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>The Apache Software License, Version 2.0<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://www.apache.org/licenses/LICENSE-2.0.txt<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">license</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">licenses</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 开发者 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">developers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">developer</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadix<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">email</span>&gt;</span>hadix.lin@gmail.com<span class="tag">&lt;/<span class="name">email</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">developer</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">developers</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 源码控制管理系统 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">scm</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">connection</span>&gt;</span>scm:git@github.com:hadix-lin/springfox-plus.git<span class="tag">&lt;/<span class="name">connection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">developerConnection</span>&gt;</span>scm:git@github.com:hadix-lin/springfox-plus.git<span class="tag">&lt;/<span class="name">developerConnection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://github.com/hadix-lin/springfox-plus<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">scm</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 项目的依赖 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependencies</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 这里使用一个profile来管理发布时的构建插件 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">profiles</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>release<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 打源码包 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-source-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>jar-no-fork<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 打javadoc包 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-javadoc-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">show</span>&gt;</span>private<span class="tag">&lt;/<span class="name">show</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">nohelp</span>&gt;</span>true<span class="tag">&lt;/<span class="name">nohelp</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">charset</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">charset</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">encoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">encoding</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">docencoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">docencoding</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 对构件进行GPG签名 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-gpg-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>verify<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>sign<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            nexus-staging 这个插件用于在最后执行一些仓库操作</span></span><br><span class="line"><span class="comment">            这些操作也可以手动在sonatype的仓库上进行,但是相对繁琐,推荐使用插件.</span></span><br><span class="line"><span class="comment">            手动操作不在本文进行描述,可以自行查阅[文档](https://central.sonatype.org/pages/releasing-the-deployment.html)</span></span><br><span class="line"><span class="comment">           --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.sonatype.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>nexus-staging-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6.8<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">extensions</span>&gt;</span>true<span class="tag">&lt;/<span class="name">extensions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">serverId</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">serverId</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">nexusUrl</span>&gt;</span>https://oss.sonatype.org/<span class="tag">&lt;/<span class="name">nexusUrl</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">autoReleaseAfterClose</span>&gt;</span>true<span class="tag">&lt;/<span class="name">autoReleaseAfterClose</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- 配置发布的仓库 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://oss.sonatype.org/content/repositories/snapshots/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://oss.sonatype.org/service/local/staging/deploy/maven2/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">profiles</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上面的pom文件是从我的项目中截取的,全文可以看<a href="https://github.com/hadix-lin/springfox-plus/blob/master/pom.xml">这里</a></p>
+<p>另外还要在您的全局maven配置中添加如下内容</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servers</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 这个id要跟上面pom中配置的repository的id一致 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 用户名/密码就是您在上面注册得到的 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>用户名<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>密码<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servers</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="准备GPG签名密钥"><a href="#准备GPG签名密钥" class="headerlink" title="准备GPG签名密钥"></a>准备GPG签名密钥</h3><p>上文中配置的maven-gpg-plugin需要本机配置好GPG密钥,GPG是一种非对称加密算法,密钥要公钥私钥,公钥需要上传到公钥服务器上,私钥安装在本地.</p>
+<p>在macOS下通过brew安装gpg命令,然后生成密钥:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">brew install gpg</span><br><span class="line"><span class="comment"># 检查是否安装成功</span></span><br><span class="line">gpg --version </span><br><span class="line"><span class="comment"># 生成密钥</span></span><br><span class="line">gpg --gen-key</span><br><span class="line"><span class="comment"># 之后会在命令行中以交互模式让你填写姓名,邮箱等等信息,最后输入两次用于保护密钥的密码</span></span><br><span class="line"><span class="comment"># 然后使用如下命令查看生成的密钥</span></span><br><span class="line">gpg --list-keys</span><br><span class="line"><span class="comment"># 如下输出</span></span><br><span class="line"><span class="comment"># /Users/hadix/.gnupg/pubring.kbx -&gt; 密钥文件,内含私钥</span></span><br><span class="line"><span class="comment"># -------------------------------</span></span><br><span class="line"><span class="comment"># pub   rsa2048 2019-04-21 [SC] [expires: 2021-04-20]</span></span><br><span class="line"><span class="comment">#       58FD688CA40BE2002C1B68C848492F673D89A858 --&gt;公钥</span></span><br><span class="line"><span class="comment"># uid           [ultimate] hadix &lt;hadix.lin@gamil.com&gt;</span></span><br><span class="line"><span class="comment"># sub   rsa2048 2019-04-21 [E] [expires: 2021-04-20]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后将公钥发布到密钥服务器</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net --send-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 如果发布失败请尝试如下命令</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net:80 --send-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 检查是否发布成功</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 如果失败请尝试如下命令</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys &lt;您的公钥&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="STEP3-发布到sonatype仓库"><a href="#STEP3-发布到sonatype仓库" class="headerlink" title="STEP3 : 发布到sonatype仓库"></a>STEP3 : 发布到sonatype仓库</h2><p>上面已经配置好了maven的pom文件,可以直接使用如下命令进行发布</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mvn clean deploy -P release</span><br><span class="line"><span class="comment"># 如果构件过程中无法正确生成gpg签名,出现类似&quot;Exit Code 2&quot;的错误,那么请执行如下命令</span></span><br><span class="line"><span class="built_in">export</span> GPG_TTY=$(<span class="built_in">tty</span>)</span><br><span class="line">mvn clean deploy -P release</span><br><span class="line"><span class="comment"># 执行成功后 由于我们在上面的pom文件中配置了&lt;autoReleaseAfterClose&gt;true&lt;/autoReleaseAfterClose&gt;</span></span><br><span class="line"><span class="comment"># maven构件过程会自动进行release构件上架</span></span><br></pre></td></tr></table></figure>
+
+<p>如果您的项目版本号是以<code>-SNAPSHOT</code>结尾,那么构件将发布到snapshot仓库,不会同步到中央仓库.</p>
+<p>如果您的项目构建不满足上文中的先决条件,那么上述命令会返回类似如下的输出</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[ERROR] Rule failure <span class="keyword">while</span> trying to close staging repository with ID <span class="string">&quot;iogithubhadix-lin-1002&quot;</span>.</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Nexus Staging Rules Failure Report</span><br><span class="line">[ERROR] ==================================</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Repository <span class="string">&quot;iogithubhadix-lin-1002&quot;</span> failures</span><br><span class="line">[ERROR]   Rule <span class="string">&quot;pom-staging&quot;</span> failures</span><br><span class="line">[ERROR]     * Invalid POM: /io/github/hadix-lin/http/1.0/http-1.0.pom: Project name missing, Project description missing, Project URL missing</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Cleaning up <span class="built_in">local</span> stage directory after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Deleting context ac894b84a446a7.properties</span><br><span class="line">[ERROR] Cleaning up remote stage repositories after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Dropping failed staging repository with ID <span class="string">&quot;iogithubhadix-lin-1002&quot;</span> (Rule failure during close of staging repositories: [iogithubhadix-lin-1002]).</span><br></pre></td></tr></table></figure>
+
+<p>按提示修改项目的pom文件即可.例如上面这段错误信息提示我的项目没有<code>Project name</code>.在pom中增加<code>&lt;name&gt;http&lt;/name&gt;</code>即可.</p>
+<h2 id="STEP4-回复ISSUE来发起同步"><a href="#STEP4-回复ISSUE来发起同步" class="headerlink" title="STEP4 : 回复ISSUE来发起同步"></a>STEP4 : 回复ISSUE来发起同步</h2><p>首次发布构件的时候,是不会自动同步到中央仓库的.当上面的步骤全部执行成功后,需要找到最初创建的ISSUE页面.在评论区用英文写一条评论,比如”the first release version(0.0.1) uploaded via maven”.然后耐心等待,会收到回复.像下面图中的样子.</p>
+<p><img src="https://i.loli.net/2019/05/15/5cdaf1737f70f93934.png" alt="image-20190427204606484"></p>
+<p>以后只要是同一个groupId的构件发布就不需要再来回复了.发布后过差不多两个小时就会自动同步到中央仓库.</p>
+<p>如果要发不不同groupId的构件,那么请重复STEP1中创建ISSUE的操作.</p>
+]]></content>
+      <tags>
+        <tag>tutorial</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>我的IDEA插件列表</title>
+    <url>/2019/05/10/%E6%88%91%E7%9A%84IDEA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8/</url>
+    <content><![CDATA[<p>我算是个IDEA资深用户了,应该有10年了吧.</p>
+<p>IDEA默认提供的插件功能已经相当丰富,对流行的开源框架支持非常好.</p>
+<p>下面说一下我安装的非默认插件:</p>
+<h3 id="IdeaVim"><a href="#IdeaVim" class="headerlink" title="IdeaVim"></a>IdeaVim</h3><p>在IDEA的编辑器使用vim编辑模式,如果你想尝试脱离鼠标做全键盘操作,这个就是神器.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/164-ideavim">IdeaVim - Plugins | JetBrains</a></p>
+<h3 id="IdeaVimExtension"><a href="#IdeaVimExtension" class="headerlink" title="IdeaVimExtension"></a>IdeaVimExtension</h3><p>作为上面插件的扩展,只提供一个功能,就是在normal模式的时候保持输入法是英文状态.你知道中文用户总是有各种场景需要切换输入法的.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/9615-ideavimextension">IdeaVimExtension - Plugins | JetBrains</a></p>
+<h3 id="Google-Java-Format"><a href="#Google-Java-Format" class="headerlink" title="Google Java Format"></a>Google Java Format</h3><p>按照Google的Java代码规范格式化代码,有了这个插件就不用在IDE里面这种配置了,这个插件帮助搞定一切,这个插件格式化的效果我非常喜欢,代码紧凑,易读.如果团队没有特别的需求,可以利用这个插件做团队代码规范实施.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/8527-google-java-format">google-java-format - Plugins | JetBrains</a></p>
+<h3 id="Lombok-Plugin"><a href="#Lombok-Plugin" class="headerlink" title="Lombok Plugin"></a>Lombok Plugin</h3><p>lombok工具可以通过注解处理器来生成样板代码,比如JavaBean的getter,setter.这个插件帮助IDE识别自动生成的代码.非常好用的工具,一定要安装.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/6317-lombok-plugin">Lombok Plugin - Plugins | JetBrains</a></p>
+<h3 id="Maven-Helper"><a href="#Maven-Helper" class="headerlink" title="Maven Helper"></a>Maven Helper</h3><p>maven的扩展工具,maven用户一定要安装!!!.用来分析依赖冲突相当好用.IDEA自带的依赖图真的很难用.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/7179-maven-helper">Maven Helper - Plugins | JetBrains</a></p>
+<h3 id="ignore"><a href="#ignore" class="headerlink" title=".ignore"></a>.ignore</h3><p>这个插件帮助你编写各种vcs系统的ignore文件,例如.gitignore.提供语法高亮,并可以将忽略的文件和文件夹用特别的颜色标记出来.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/7495--ignore">.ignore - Plugins | JetBrains</a></p>
+<h3 id="String-Manipulation"><a href="#String-Manipulation" class="headerlink" title="String Manipulation"></a>String Manipulation</h3><p>提供非常多的文本操作,非常好用,我经常用这个来编写分表的SQL语句,结合IDEA的列编辑功能批量生成序列号之类的操作骚得很.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/2162-string-manipulation">String Manipulation - Plugins | JetBrains</a></p>
+<h3 id="Custom-Postfix-Templates"><a href="#Custom-Postfix-Templates" class="headerlink" title="Custom Postfix Templates"></a>Custom Postfix Templates</h3><p>IDEA的后缀自动完成功能特别好用,比如写一个表达式可以通过接一个.var自动声明变量.这个插件提供了非常多的后缀模板,而且支持在线更新,功能非常丰富,支持多种编程语言..toString,toInt,toLong….</p>
+<p><a href="https://plugins.jetbrains.com/plugin/9862-custom-postfix-templates">Custom Postfix Templates - Plugins | JetBrains</a></p>
+<h3 id="Free-Mybatis-Plugin"><a href="#Free-Mybatis-Plugin" class="headerlink" title="Free Mybatis Plugin"></a>Free Mybatis Plugin</h3><p>mybatis插件的免费支持框架,提供xml mapper代码检查和导航等功能.这个免费插件的功能对我而言够用了.还有个收费的MbatisPlugin,功能更丰富,但是我没有特别强的需求用不上.</p>
+<p>另外再次推荐一个Myabtis的扩展框架<a href="https://mybatis.plus/">MybatisPlus</a>非常好用.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/8321-free-mybatis-plugin">Free MyBatis plugin - Plugins | JetBrains</a></p>
+<h3 id="Mybatis-Log-Plugin"><a href="#Mybatis-Log-Plugin" class="headerlink" title="Mybatis Log Plugin"></a>Mybatis Log Plugin</h3><p>将myabtis输出的日志整理成更易读的形式进行输出,在调试sql语句的时候还挺有用的.个人用的不是很多.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/10065-mybatis-log-plugin">MyBatis Log Plugin - Plugins | JetBrains</a></p>
+<h3 id="Grep-Console"><a href="#Grep-Console" class="headerlink" title="Grep Console"></a>Grep Console</h3><p>对控制台输出的日志按日志级别进行高亮,可以进行很多自定义,我用的比较简单,安装之后就使用了默认配置.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/7125-grep-console">Grep Console - Plugins | JetBrains</a></p>
+<h3 id="BashSupport"><a href="#BashSupport" class="headerlink" title="BashSupport"></a>BashSupport</h3><p>编写bash标本的辅助工具.个人不怎么常用,偶尔用来看一下别人写的脚本,有语法高亮.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/4230-bashsupport">BashSupport - Plugins | JetBrains</a></p>
+<h3 id="HotSwapAgent"><a href="#HotSwapAgent" class="headerlink" title="HotSwapAgent"></a>HotSwapAgent</h3><p>JVM原有的HotSwap功能可以在类型和方法定义未变更的情况下对类进行重加载,在调试时非常有用.这个插件可以支持类型变更比如添加属性,方法之后进行重加载,也提供了一些框架的支持,有一定效果,但是支持不完善.用得不多.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/9552-hotswapagent">HotSwapAgent - Plugins | JetBrains</a></p>
+<h3 id="Key-Promoter-X"><a href="#Key-Promoter-X" class="headerlink" title="Key Promoter X"></a>Key Promoter X</h3><p>利用这个插件来熟悉IDEA的快捷键,每当你用鼠标单击UI上的功能按钮的时候,这个插件会通过右下角的气泡消息提示你对应的快捷键是什么.还会统计次数.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/9792-key-promoter-x">Key Promoter X - Plugins | JetBrains</a></p>
+<h3 id="Kotlin-Sequence-Debugger"><a href="#Kotlin-Sequence-Debugger" class="headerlink" title="Kotlin Sequence Debugger"></a>Kotlin Sequence Debugger</h3><p>提供类型Java Stream Debugger的功能,在调试的时候可以针对<code>.filter&#123;&#125;.foreach&#123;&#125;</code>这样的代码进行调试,对每一步操作提供详细的视图,Java8和kotlin的用户强烈建议使用这个插件.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/10301-kotlin-sequence-debugger">Kotlin Sequence Debugger - Plugins | JetBrains</a></p>
+<h3 id="MetricsReloaded"><a href="#MetricsReloaded" class="headerlink" title="MetricsReloaded"></a>MetricsReloaded</h3><p>提供了各种算法来评估代码的复杂度,对代码质量评估有帮助.关注代码质量的用户请一定试用一下.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/93-metricsreloaded">MetricsReloaded - Plugins | JetBrains</a></p>
+<h3 id="Rainbow-Brackets"><a href="#Rainbow-Brackets" class="headerlink" title="Rainbow Brackets"></a>Rainbow Brackets</h3><p>增强的括号匹配插件,将配对的括号标记成各种各样的颜色,配色非常好看.对代码阅读有一定帮助.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/10080-rainbow-brackets">Rainbow Brackets - Plugins | JetBrains</a></p>
+<h3 id="Translation"><a href="#Translation" class="headerlink" title="Translation"></a>Translation</h3><p>最近才安装的插件,利用Google,有道或百度的API将翻译功能集成到IDE里面,英文不是很好的朋友建议安装.翻译个单词,找个变量名什么的还是挺方便的.</p>
+<p>不过使用GoogleApi需要翻墙,有道和百度需要申请应用开发者账号,而且可能还要被收费.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/8579-translation">Translation - Plugins | JetBrains</a></p>
+<h3 id="Settings-Repository"><a href="#Settings-Repository" class="headerlink" title="Settings Repository"></a>Settings Repository</h3><p>这个插件是自带的,开启之后可以将IDEA的配置同步到git仓库(比如github).</p>
+<p>使用说明再次<a href="https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#settings-repository">https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#settings-repository</a></p>
+<p>最后附上我的IDEA配置仓库: </p>
+<p>GitHub仓库主页:  <a href="https://github.com/hadix-lin/idea-setting">https://github.com/hadix-lin/idea-setting</a></p>
+<p>仓库地址: <a href="https://github.com/hadix-lin/idea-setting.git">https://github.com/hadix-lin/idea-setting.git</a></p>
+]]></content>
+      <tags>
+        <tag>IDE</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>改善编程体验: IdeaVimExtension介绍</title>
+    <url>/2019/05/10/%E6%94%B9%E5%96%84%E7%BC%96%E7%A8%8B%E4%BD%93%E9%AA%8C-IdeaVimExtension%E4%BB%8B%E7%BB%8D/</url>
+    <content><![CDATA[<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>Intellij IDEA是个非常优秀的开发环境,提供了相当好用的快捷键,让用户有机会脱离鼠标来使用IDE.</p>
+<p>另外官方还提供了IdeaVim插件,熟悉vim的用户可以使用几乎与vim相同的方式操作IDEA的编辑器来编写代码.但是作为非英文用户,却有一个”输入法切换”的痛点.</p>
+<p>考虑如下两种情况:</p>
+<ol>
+<li>编辑器中在insert模式下,编写了一段中文注释,然后需要回到normal模式移动光标到其他位置继续编写代码.</li>
+<li>正在编辑器normal模式下操作,此时突然有紧急邮件或者钉钉消息需要回复,输入法切换为中文回复后再回到编辑器.</li>
+</ol>
+<p>类似上面两种场景,当回到normal模式编辑器时,我们都不得不人工操作一次输入法切换,即使您已经为输入法切换设置了非常好用的快捷键(按一下Shift),这个操作依然是恼人的,经常会忘记,输入几个字符后才发现,这可能带来误操作.</p>
+<p>我们的期望只有一个:</p>
+<blockquote>
+<p>在任何情况下,进入normal模式,输入法必是<strong>英文</strong>状态.</p>
+</blockquote>
+<p>因此我基于IdeaVim的扩展点开发了一个帮助切换输入法的小插件<a href="https://plugins.jetbrains.com/plugin/9615-ideavimextension">IdeaVimExtension</a></p>
+<h2 id="IdeaVimExtension安装使用"><a href="#IdeaVimExtension安装使用" class="headerlink" title="IdeaVimExtension安装使用"></a>IdeaVimExtension安装使用</h2><ol>
+<li><p>如果您已经是IdeaVim的用户,那么直接在Intellj IDEA的插件中心搜索<code>IdeaVimExtension</code>进行安装.或者到<a href="https://plugins.jetbrains.com/plugin/9615-ideavimextension">IdeaVimExtension</a>插件主页进行下载安装.</p>
+<blockquote>
+<p>IdeaVimExtension是依赖IdeaVim的,需要事先安装IdeaVim</p>
+</blockquote>
+</li>
+<li><p>确保你的操作系统已经开启了英文输入法</p>
+<ul>
+<li><p>Windows需要开启en_US<img src="https://i.loli.net/2019/05/10/5cd51757cf056.png" alt="image-20190320104934233">输入法 </p>
+</li>
+<li><p>macOS需要开启ABC<img src="https://i.loli.net/2019/05/10/5cd517584fb43.png" alt="image-20190320104604867"></p>
+<p>或en_US<img src="https://i.loli.net/2019/05/10/5cd51758c56cc.png" alt="image-20190320104634422">输入法</p>
+</li>
+<li><p>Linux 需要使用小企鹅输入法(<strong>Fcitx</strong>)</p>
+</li>
+</ul>
+</li>
+<li><p>安装重启IDEA后,输入法自动切换功能会默认启用</p>
+</li>
+</ol>
+<p>  也可以通过打开任意代码编辑器在normal模式下输入如下两个命令来激活IdeaVimExtension插件</p>
+<ul>
+<li><code>:set keep-english-in-normal</code> : 在normal模式保持英文状态(这也是默认启用的状态)</li>
+<li><code>:set keep-english-in-normal-and-restore-in-insert</code> : 在normal模式保持英文状态,并在回到insert时恢复输入法到原来的状态.例如,编写一段中文注释,用中文输入法写了一段文字,进入normal模式移动光标到下一行,再回到插入模式继续使用中文编辑.</li>
+</ul>
+<ol start="4">
+<li><p>上面两个命令在每次IDEA重启后都需要重新输入,也可以通过在用户目录下添加<code> .ideavimrc</code>文件,将命令添加到该文件中,这样在IDEA重启时可以自动执行该文件中的指令.另外,该文件中也可以添加其他<a href="https://github.com/JetBrains/ideavim/blob/master/doc/set-commands.md">受支持的vim指令</a>.类似vim的<code>.vimrc</code>文件.</p>
+</li>
+<li><p>如果要关闭输入法切换功能直接直接输入对应的<code>:set nokeep-english-in-normal[-and-restore-in-insert]</code></p>
+</li>
+</ol>
+<p>接下来就可以愉快的使用全键盘操作来编写代码了.</p>
+<h2 id="额外一点分享"><a href="#额外一点分享" class="headerlink" title="额外一点分享"></a>额外一点分享</h2><p>相信很多同学都是使用苹果电脑的.苹果电脑的键盘设计对vim用户越来越不友好了.对vim用户来说<code>ESC</code>是个非常高频的按键.但是苹果键盘的<code>ESC</code>设计比较小,且位置偏远,有bar的新MBP的<code>ESC</code>是虚拟的基本没有任何按键反馈.我的处理方法是使用<a href="https://pqrs.org/osx/karabiner/">karabiner</a>软件将<code>ESC</code>和不常用的<code>~</code>进行交换.</p>
+<p>另外键盘上的方向键,新MBP的上下被缩小到一个按键的面积偏小,且需要移动右手去按,对编写代码这样的文字工作是不友好的在使用vim编辑器是可以通过<code>hkjl</code>来替换,但也总有非vim环境需要使用方向键,比如IDEA的Project视图等.我的处理方法是设置<code>Ctrl+hkjl</code>来替换方向键,为了纠正习惯将原始的方向键禁用了.</p>
+<p>最后<code>CapsLock</code>键用处不大,有时会误按造成vim-normal模式下的误操作,所以我将该键跟左下角的Ctrl交换了.这样既改善了<code>Ctrl</code>的按键体验,也可以避免误按<code>CapsLock</code></p>
+<blockquote>
+<p>Windows用户请自行寻找键位映射工具.</p>
+</blockquote>
+<p>在此提供我的配置文件,可以直接copy到~&#x2F;.config&#x2F;karabiner&#x2F;karabiner.json来使用:</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;global&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;check_for_updates_on_startup&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;show_in_menu_bar&quot;</span><span class="punctuation">:</span> <span class="keyword">false</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;show_profile_name_in_menu_bar&quot;</span><span class="punctuation">:</span> <span class="keyword">false</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;profiles&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;complex_modifications&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;parameters&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;basic.simultaneous_threshold_milliseconds&quot;</span><span class="punctuation">:</span> <span class="number">50</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;basic.to_delayed_action_delay_milliseconds&quot;</span><span class="punctuation">:</span> <span class="number">500</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;basic.to_if_alone_timeout_milliseconds&quot;</span><span class="punctuation">:</span> <span class="number">1000</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;basic.to_if_held_down_threshold_milliseconds&quot;</span><span class="punctuation">:</span> <span class="number">500</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;rules&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">          <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;description&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Vi Mode [left_control + hjkl]&quot;</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;manipulators&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">              <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                  <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;h&quot;</span><span class="punctuation">,</span></span><br><span class="line">                  <span class="attr">&quot;modifiers&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;mandatory&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                      <span class="string">&quot;control&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;optional&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                      <span class="string">&quot;caps_lock&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;command&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;option&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;shift&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;fn&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span></span><br><span class="line">                  <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                  <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;left_arrow&quot;</span></span><br><span class="line">                  <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;basic&quot;</span></span><br><span class="line">              <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">              <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                  <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;j&quot;</span><span class="punctuation">,</span></span><br><span class="line">                  <span class="attr">&quot;modifiers&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;mandatory&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                      <span class="string">&quot;control&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;optional&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                      <span class="string">&quot;caps_lock&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;command&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;option&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;shift&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;fn&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span></span><br><span class="line">                  <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                  <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;down_arrow&quot;</span></span><br><span class="line">                  <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;basic&quot;</span></span><br><span class="line">              <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">              <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                  <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;k&quot;</span><span class="punctuation">,</span></span><br><span class="line">                  <span class="attr">&quot;modifiers&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;mandatory&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                      <span class="string">&quot;control&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;optional&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                      <span class="string">&quot;caps_lock&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;command&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;option&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;shift&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;fn&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span></span><br><span class="line">                  <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                  <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;up_arrow&quot;</span></span><br><span class="line">                  <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;basic&quot;</span></span><br><span class="line">              <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">              <span class="punctuation">&#123;</span></span><br><span class="line">                <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                  <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;l&quot;</span><span class="punctuation">,</span></span><br><span class="line">                  <span class="attr">&quot;modifiers&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;mandatory&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                      <span class="string">&quot;control&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                    <span class="attr">&quot;optional&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                      <span class="string">&quot;caps_lock&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;command&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;option&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;shift&quot;</span><span class="punctuation">,</span></span><br><span class="line">                      <span class="string">&quot;fn&quot;</span></span><br><span class="line">                    <span class="punctuation">]</span></span><br><span class="line">                  <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                  <span class="punctuation">&#123;</span></span><br><span class="line">                    <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;right_arrow&quot;</span></span><br><span class="line">                  <span class="punctuation">&#125;</span></span><br><span class="line">                <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;basic&quot;</span></span><br><span class="line">              <span class="punctuation">&#125;</span></span><br><span class="line">            <span class="punctuation">]</span></span><br><span class="line">          <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">]</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Default profile&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;selected&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;simple_modifications&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;caps_lock&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;left_control&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;escape&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;grave_accent_and_tilde&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;grave_accent_and_tilde&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;escape&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;left_control&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;caps_lock&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;right_command&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;key_code&quot;</span><span class="punctuation">:</span> <span class="string">&quot;left_control&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;virtual_hid_keyboard&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;country_code&quot;</span><span class="punctuation">:</span> <span class="number">0</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>vim</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在开发中使用Docker</title>
+    <url>/2019/05/15/%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8Docker/</url>
+    <content><![CDATA[<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>随着微服务和云原生概念的盛行，未来的服务端架构将越来越多得将项目构建为Docker镜像来进行部署。在开发和集成构建阶段使用Docker成为服务端开发人员的必须技能。</p>
+<p>本文主要关注在开发阶段使用Docker，所以不包括容器编排，集群网络，负载均衡等分布式相关的内容。有关分布式主题相关内容可以通过学习<a href="https://kubernetes.io/">kubernetes</a>来理解。</p>
+<h2 id="安装Docker-Desktop-for-Mac"><a href="#安装Docker-Desktop-for-Mac" class="headerlink" title="安装Docker Desktop for Mac"></a>安装Docker Desktop for Mac</h2><p>在mac中安装docker可以通过homebrew进行安装</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew cask install docker</span><br><span class="line"><span class="comment">## 验证安装是否成功</span></span><br><span class="line">docker --<span class="built_in">help</span> </span><br></pre></td></tr></table></figure>
+
+<p>也可以到参照文档进行手动下载安装</p>
+<ul>
+<li><a href="https://docs.docker.com/docker-for-windows/install/">Docker Desktop for Windows 的安装文档</a></li>
+<li><a href="https://docs.docker.com/docker-for-mac/install/">Docker Desktop for Mac 的安装文档</a></li>
+</ul>
+<h2 id="示例项目准备"><a href="#示例项目准备" class="headerlink" title="示例项目准备"></a>示例项目准备</h2><p>本文以<a href="https://github.com/hadix-lin/springfox-plus">SpringFox-Plus</a>这个项目的示例模块为例，该项目使用kotlin开发，提供Swagger-API接口文档的WEB服务。</p>
+<ol>
+<li><p>下载并构建该项目</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/hadix-lin/springfox-plus.git</span><br><span class="line"><span class="built_in">cd</span> springfox-plus/springfox-plus-sample</span><br><span class="line">mvn package -P with-api-doc</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>准备Docker镜像</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> $(<span class="built_in">pwd</span>) <span class="comment"># 接第一步中的命令，当前workdir应该为springfox-plus-sample</span></span><br><span class="line"><span class="built_in">mkdir</span> docker-image</span><br><span class="line"><span class="built_in">cp</span> target/springfox-plus-sample-1.0.1.jar docker-image/sample.jar</span><br><span class="line"><span class="built_in">cd</span> docker-image</span><br><span class="line">vim Dockerfile</span><br></pre></td></tr></table></figure>
+
+<p>编辑<code>Dockerfile</code>文件内容如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">8</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> . /app</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /app</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span>/tcp</span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;java&quot;</span>,<span class="string">&quot;-jar&quot;</span>,<span class="string">&quot;sample.jar&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<p>开始构建镜像</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker build -t springfox-plus:sample .</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><p>前面的操作已经准备好了Docker镜像，下面开始让应用运行起来</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run  <span class="comment"># 运行指令</span></span><br><span class="line">-d\ <span class="comment"># 后台运行(detached)</span></span><br><span class="line">-p 8080:8080\ <span class="comment"># 绑定主机和容器的端口</span></span><br><span class="line">--<span class="built_in">rm</span>\ <span class="comment"># 容器退出后自动清除容器</span></span><br><span class="line">--name sample <span class="comment"># 指定容器名称</span></span><br><span class="line">springfox-plus:sample <span class="comment"># 要运行的镜像</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 将命令写在单行</span></span><br><span class="line">docker run -d -p 8080:8080 --<span class="built_in">rm</span> --name sample springfox-plus:sample</span><br></pre></td></tr></table></figure>
+
+<p>然后使用浏览器访问地址[<a href="http://127.0.0.1:8080/swagger-ui.html]">http://127.0.0.1:8080/swagger-ui.html]</a>(<a href="http://127.0.0.1:8080/swagger-ui.html]%E5%8D%B3%E5%8F%AF%E8%AE%BF%E9%97%AEswagger-ui%EF%BC%8C%E5%A6%82%E4%B8%8B%E5%9B%BE%E6%89%80%E7%A4%BA">http://127.0.0.1:8080/swagger-ui.html]即可访问swagger-ui，如下图所示</a>:</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190514180551496.png?x-oss-process=style/Q70" alt="image-20190514180551496"></p>
+<h2 id="改进开发流程"><a href="#改进开发流程" class="headerlink" title="改进开发流程"></a>改进开发流程</h2><p>上文的构建-&gt;运行的流程比较适合将发布到生产环境的时候使用，在开发阶段，我们会经常进行修改测试，如果每次都要重新构建镜像然后运行，就会比较繁琐。我们期望在开发阶段只构建一次镜像，该镜像保持和生产一直的配置，但是应用包本身不需要包含在其中，这样更改应用包就不需要重新构建镜像了。</p>
+<p>可以通过<code>VOLUME</code>来将让容器直接访问本地的应用，下面开发修改Dockerfile为如下内容:</p>
+<figure class="highlight dockerfile"><table><tr><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">8</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> <span class="built_in">mkdir</span> /app</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /app</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span>/TCP</span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;java&quot;</span>,<span class="string">&quot;-jar&quot;</span>,<span class="string">&quot;springfox-plus-sample-1.0.1.jar&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<p>使用上面的Dockerfile构建一个新的Docker镜像,然后使用<code>—mount</code>参数来运行</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># workdir = docker-image</span></span><br><span class="line">docker build -t springfox-plus:sample-use-mount .</span><br><span class="line"><span class="built_in">cd</span> ..</span><br><span class="line"><span class="comment"># workdir = springfox-plus-sample</span></span><br><span class="line">docker run -d -p 8080:8080 --name sample-use-mount --mount \</span><br><span class="line"><span class="built_in">type</span>=<span class="built_in">bind</span>,<span class="built_in">source</span>=<span class="string">&quot;<span class="subst">$(pwd)</span>&quot;</span>/target,target=/app,<span class="built_in">readonly</span> \</span><br><span class="line">springfox-plus:sample-use-mount</span><br><span class="line"><span class="comment"># 停止容器运行</span></span><br><span class="line">docker stop sample-use-mount</span><br></pre></td></tr></table></figure>
+
+<p>这样每次更改应用包只要使用<code>mvn package</code>重新打包，然后使用上面的命令重启容器即可，避免了重新构建镜像。</p>
+<p>如果使用IntellijIDEA，那么可以通过Run Configuration进行配置：</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190514194653182.png?x-oss-process=style/Q70" alt="image-20190514194653182"></p>
+<p>可以直接将<code>mvn package</code>配置到Before launch的列表中，这样每次使用这个Run Configuration运行docker容器时都会重新构建应用包，可以进一步减少开发过程中的人工操作。</p>
+<h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><p>应用运行在Docker容器中，对开发者来说可以视为运行在另外远程服务器上，所以可以通过远程调试端口来进行调试。</p>
+<p>只需要更改Dockerfile中的CMD，在入口命令加入java远程调试的相关设置即可。例如：</p>
+<figure class="highlight dockerfile"><table><tr><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">8</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> . /app</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /app</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span>/tcp</span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;java&quot;</span>,<span class="string">&quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005&quot;</span>,\</span></span><br><span class="line"><span class="language-bash"><span class="string">&quot;-jar&quot;</span>,<span class="string">&quot;sample.jar&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<p>重新构建镜像并运行，即可通过端口5005进行远程调试了。</p>
+<p>在IntellijIDEA中配置远程调试，如图：</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190514195906722.png?x-oss-process=style/Q70" alt="image-20190514195906722"></p>
+<h2 id="访问运行的容器"><a href="#访问运行的容器" class="headerlink" title="访问运行的容器"></a>访问运行的容器</h2><p>在上文中运行容器我们使用的命令是<code>docker run -d ……</code> 其中的<code>-d</code>参数表示后台运行容器，此时我们看不到容器中运行的应用的标准输入&#x2F;输出。</p>
+<p>使用<code>docker attach &lt;container-name&gt;</code>可以将当前终端的标准输入&#x2F;输出&#x2F;错误流关联到指定的容器上。执行该命令后，就可以在当前终端中看到容器的控制台输出了。</p>
+<p>如果想在容器中运行命令可以使用<code>docker exec [OPTIONS] CONTAINER COMMAND [ARG…] </code>，进一步可以利用该命令获得与运行的容器进行交互的能力。</p>
+<p>如果容器运行的镜像中包含<code>bash</code>命令，可以使用<code>docker exec -it CONTAINER bash</code>来在容器中运行<code>bash</code>，并将当前终端的标准输入&#x2F;输出&#x2F;错误流关联到容器。这样就可以通过命令行跟运行的容器进行交互了，在这个命令行中能够使用的命令取决于运行的镜像内容。</p>
+<p>有关docker命令的具体使用可以使用<code>docker help COMMAND</code>来查看使用说明，可以参考<a href="https://docs.docker.com/engine/reference/commandline/cli">文档</a>。</p>
+<h2 id="命令总结"><a href="#命令总结" class="headerlink" title="命令总结"></a>命令总结</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 验证docker安装，输出使用说明</span></span><br><span class="line">docker --<span class="built_in">help</span> </span><br><span class="line"><span class="comment"># 构建镜像</span></span><br><span class="line">docker build -t &lt;tag&gt; &lt;context_path&gt;</span><br><span class="line"><span class="comment"># 启动容器</span></span><br><span class="line">docker run -d -p &lt;container_port&gt;:&lt;host_port&gt; --name &lt;container_name&gt; \</span><br><span class="line">--mount &lt;mount_params&gt; &lt;image:tag&gt;</span><br><span class="line"><span class="comment"># 停止容器</span></span><br><span class="line">docker stop &lt;container_name or <span class="built_in">id</span>&gt;</span><br><span class="line"><span class="comment"># 将标准输入、输出、错误流关联到运行的容器</span></span><br><span class="line">docker attach &lt;container_name or <span class="built_in">id</span>&gt;</span><br></pre></td></tr></table></figure>
+
+<p>后续内容<a href="/2019/05/17/use_docker_in_development-continued.html">在开发中使用Docker-续.md</a> </p>
+]]></content>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在开发中使用Docker-续</title>
+    <url>/2019/05/17/%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8Docker-%E7%BB%AD/</url>
+    <content><![CDATA[<blockquote>
+<p>本文内容承接<a href="/2019/05/15/use_docker_in_development.html">上一篇：在开发中使用Docker</a></p>
+</blockquote>
+<h2 id="运行多个容器"><a href="#运行多个容器" class="headerlink" title="运行多个容器"></a>运行多个容器</h2><p>下面我们用一个稍微复杂点儿的服务来演示如何搭配使用多个容器。演示使用的计数器服务由web服务，保存计数用的Redis实例，以及保存业务数据的Mysql实例组成，共运行三个容器。</p>
+<p>使用Docker运行mysql和redis</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建一个自定义bridge network，后续所有的容器都连接到这个网络上以便相互访问</span></span><br><span class="line">docker network create counter-net</span><br><span class="line"><span class="comment"># 运行mysql 5，该命令会自动从Docker Hub拉取镜像</span></span><br><span class="line">docker run --<span class="built_in">rm</span> \</span><br><span class="line">--network counter-net \</span><br><span class="line">--name mysql \</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=12345678 \</span><br><span class="line">-d mysql:5</span><br><span class="line"></span><br><span class="line"><span class="comment"># 运行redis，该命令会自动从Docker Hub拉去镜像redis</span></span><br><span class="line">docker run --<span class="built_in">rm</span> \</span><br><span class="line">--name redis \</span><br><span class="line">--network counter-net \</span><br><span class="line">-d redis</span><br></pre></td></tr></table></figure>
+
+<p>构建<code>simple-counter</code></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 从samples仓库中签出simple-counter</span></span><br><span class="line">git init simple-counter</span><br><span class="line"><span class="built_in">cd</span> simple-counter</span><br><span class="line">git remote add origin git@github.com:hadix-lin/samples.git</span><br><span class="line">git config core.sparsecheckout <span class="literal">true</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;simple-counter/&quot;</span> &gt; .git/info/sparse-checkout</span><br><span class="line">git pull origin master</span><br><span class="line"><span class="comment"># 构建simple-counter</span></span><br><span class="line">mvn package</span><br><span class="line"><span class="built_in">cp</span> target/simple-counter-1.0-SNAPSHOT.jar docker-image/</span><br><span class="line"><span class="built_in">cd</span> docker-image</span><br><span class="line"><span class="comment"># 在docker-image文件夹中有Dockerfile文件</span></span><br><span class="line">docker build -t simple-counter .</span><br><span class="line">docker run -p 8080:8080 \</span><br><span class="line">--<span class="built_in">rm</span> \</span><br><span class="line">--name simple-counter \</span><br><span class="line">--network counter-net \</span><br><span class="line">-d simple-counter</span><br></pre></td></tr></table></figure>
+
+<p>simple-counter&#x2F;docker-image&#x2F;Dockerfile内容如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">8</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> simple-counter-1.0-SNAPSHOT.jar app.jar</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span>/TCP</span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;java&quot;</span>,<span class="string">&quot;-jar&quot;</span>,<span class="string">&quot;app.jar&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<p>然后浏览器访问<a href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a>可以得到如下响应</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;hostSummary&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="comment">//数据库主机信息</span></span><br><span class="line">    <span class="attr">&quot;statement_avg_latency&quot;</span><span class="punctuation">:</span> <span class="string">&quot;175.19 us&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;current_connections&quot;</span><span class="punctuation">:</span> <span class="string">&quot;12&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;total_connections&quot;</span><span class="punctuation">:</span> <span class="string">&quot;24&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;unique_users&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;current_memory&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0 bytes&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;file_ios&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1393&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;host&quot;</span><span class="punctuation">:</span> <span class="string">&quot;172.17.0.1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;total_memory_allocated&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0 bytes&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;statements&quot;</span><span class="punctuation">:</span> <span class="string">&quot;3407&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;file_io_latency&quot;</span><span class="punctuation">:</span> <span class="string">&quot;3.85 ms&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;statement_latency&quot;</span><span class="punctuation">:</span> <span class="string">&quot;596.86 ms&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;table_scans&quot;</span><span class="punctuation">:</span> <span class="string">&quot;217&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;counter&quot;</span><span class="punctuation">:</span> <span class="number">24</span> <span class="comment">//每次访问计数器+1</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>要关闭服务使用如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker stop &lt;container <span class="built_in">id</span> or name&gt;</span><br><span class="line"><span class="comment"># 本文启动了三个容器，故需要下面三条指令来关闭容器</span></span><br><span class="line">docker stop mysql</span><br><span class="line">docker stop redis</span><br><span class="line">docker stop simple-counter</span><br><span class="line"></span><br><span class="line"><span class="comment">#获取container id or name</span></span><br><span class="line">docker container <span class="built_in">ls</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>默认情况下，同一个主机上运行的docker容器会加入一个默认的bridge网络，可以通过容器的ip地址互相访问。但是镜像构建时是无法知道依赖容器的ip地址的，在上面的示例中是通过”mysql”，”redis”这样的hostname进行访问的，所以在此需要使用docker network create &lt;net-name&gt; 来创建自定义网络，自定义网络会为加入该网络的容器提供自动DNS解析，容器可以通过名称互相访问。</p>
+<p>在上面的示例中，simple-counter中有如下配置来控制redis和mysql连接：</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring.datasource.url</span>=<span class="string">jdbc:mysql://mysql:3306/sys</span></span><br><span class="line"><span class="attr">spring.redis.host</span>=<span class="string">redis</span></span><br></pre></td></tr></table></figure>
+
+<p>由于以上配置的存在，要让simple-counter正常运行，redis和mysql的容器名称必须与配置中使用的主机名称一致。</p>
+</blockquote>
+<h2 id="使用docker-compose"><a href="#使用docker-compose" class="headerlink" title="使用docker-compose"></a>使用docker-compose</h2><p>上面的命令比较繁琐，可以提前准备一个<code>docker-compose.yml</code>文件来进行管理。</p>
+<p>simple-counter&#x2F;docker-image&#x2F;docker-compose.yml内容如下：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&quot;3&quot;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">redis:</span> <span class="comment"># 服务名</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">redis</span> <span class="comment"># 要部署的镜像</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">counter-net</span></span><br><span class="line">  <span class="attr">mysql:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">mysql:5</span> <span class="comment"># 要部署的镜像</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">MYSQL_ROOT_PASSWORD=12345678</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">counter-net</span></span><br><span class="line">  <span class="attr">web:</span></span><br><span class="line">    <span class="attr">build:</span> <span class="string">.</span> <span class="comment"># 构建镜像使用的context</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;8080:8080&quot;</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">counter-net</span></span><br><span class="line"><span class="attr">networks:</span> <span class="comment"># 定义网络，相当于docker network create &lt;net-name&gt;</span></span><br><span class="line">  <span class="attr">counter-net:</span></span><br></pre></td></tr></table></figure>
+
+<p>该文件定义了三个服务redis、mysql、web。其中web是通过simple-counter&#x2F;docker-image&#x2F;Dockerfile构建的。</p>
+<p>有了这个文件后，运行simple-counter服务仅需要如下命令即可：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 从samples仓库中签出simple-counter</span></span><br><span class="line">git init simple-counter</span><br><span class="line"><span class="built_in">cd</span> simple-counter</span><br><span class="line">git remote add origin git@github.com:hadix-lin/samples.git</span><br><span class="line">git config core.sparsecheckout <span class="literal">true</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;simple-counter/&quot;</span> &gt; .git/info/sparse-checkout</span><br><span class="line">git pull origin master</span><br><span class="line"><span class="comment"># 构建simple-counter</span></span><br><span class="line">mvn package</span><br><span class="line"><span class="built_in">cp</span> target/simple-counter-1.0-SNAPSHOT.jar docker-image/</span><br><span class="line"><span class="comment">## 如果之前已经构建过simple-counter前面都可以跳过</span></span><br><span class="line"><span class="built_in">cd</span> docker-image</span><br><span class="line">docker-compose up</span><br></pre></td></tr></table></figure>
+
+<p>关闭服务使用</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> docker-image</span><br><span class="line">docker-compose down</span><br></pre></td></tr></table></figure>
+
+<h2 id="命令总结"><a href="#命令总结" class="headerlink" title="命令总结"></a>命令总结</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建自定义网络</span></span><br><span class="line">docker network create &lt;net_name&gt;</span><br><span class="line"><span class="comment"># 运行容器并加入网络</span></span><br><span class="line">docker run --network &lt;net_name&gt; [other_params] &lt;image:tag&gt;</span><br><span class="line"><span class="comment"># 列出所有运行的容器</span></span><br><span class="line">docker container <span class="built_in">ls</span></span><br><span class="line"><span class="comment"># 使用编排文件管理多个容器</span></span><br><span class="line">docker-compose up</span><br><span class="line">docker-compose down</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Docker基础知识</title>
+    <url>/2019/05/27/Docker%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</url>
+    <content><![CDATA[<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>打造便携(portable)的，轻量级的开发环境，是Docker吸引应用研发同学的主要原因。本文涉及的内容是我认为要实现这一目标，研发同学应当掌握的基本Docker知识。</p>
+<p>本文内容源自Docker官方文档的翻译，简化和重组。下文中会有一些到官方文档的连接，方便希望进一步学习Docker知识的同学。</p>
+<h2 id="安装Docker-Desktop-for-Mac"><a href="#安装Docker-Desktop-for-Mac" class="headerlink" title="安装Docker Desktop for Mac"></a>安装Docker Desktop for Mac</h2><p>在mac中安装docker可以通过homebrew进行安装</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew cask install docker</span><br><span class="line"><span class="comment">## 验证安装是否成功</span></span><br><span class="line">docker --<span class="built_in">help</span> </span><br></pre></td></tr></table></figure>
+
+<p>也可以到参照文档进行手动下载安装</p>
+<ul>
+<li><a href="https://docs.docker.com/docker-for-windows/install/">Docker Desktop for Windows 的安装文档</a></li>
+<li><a href="https://docs.docker.com/docker-for-mac/install/">Docker Desktop for Mac 的安装文档</a></li>
+</ul>
+<h2 id="应用操作系统"><a href="#应用操作系统" class="headerlink" title="应用操作系统"></a>应用操作系统</h2><p>我们开发一个应用通常需要如下依赖</p>
+<ul>
+<li>指定版本的操作系统，JDK，数据库</li>
+<li>经过一些调整的配置文件</li>
+<li>绑定指定的端口并占用一定数量的内存</li>
+<li>其他类似的依赖，比如环境变量</li>
+</ul>
+<p>应用运行需要的这些组件和配置组织在一起，我们称之为”<strong>应用操作系统</strong>“</p>
+<p>你可以提供一个安装脚本来下载安装这些依赖组件和配置。Docker简化了这个过程，使用Docker可以创建一个包含你的应用和它的基础设施的镜像，然后可以在容器虚拟化平台上通过容器来运行这个镜像。</p>
+<h2 id="Docker引擎-Docker-Engine"><a href="#Docker引擎-Docker-Engine" class="headerlink" title="Docker引擎(Docker Engine)"></a>Docker引擎(Docker Engine)</h2><p>Docker引擎是一个客户端-服务器应用程序，包含以下组件：</p>
+<ul>
+<li>一个服务端，它长期运行在后台，称为daemon进程，通过<code>dockerd</code>启动。</li>
+<li>一组用于跟daemon进程通信的REST API，用于给daemon发送指令。</li>
+<li>一个命令行接口客户端(CLI)，使用<code>docker</code>命令启动。</li>
+</ul>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/engine-components-flow.png" alt="Docker Engine Components Flow"></p>
+<p>命令行通过Docker REST API与daemon进程进行通信交互，向其发送脚本或命令。许多七大的Docker应用程序会使用底层API和命令行接口。</p>
+<p>daemon进程会创建和管理Docker组件例如镜像(Images)，容器(containers)，网络(networks)，卷(volume)</p>
+<h2 id="主要组件"><a href="#主要组件" class="headerlink" title="主要组件"></a>主要组件</h2><p>Docker具有三个主要组件：</p>
+<ol>
+<li>镜像是Docker的<strong>构建组件</strong>，它是定义了<strong>应用操作系统</strong>只读模板。</li>
+<li>容器是从镜像创建的Docker<strong>运行组件</strong>。容器可以运行有，启动，停止，迁移和删除。</li>
+<li>镜像是Docker的<strong>分发组件</strong>，被存储在注册服务中并通过该服务进行共享和管理。<a href="https://hub.docker.com/">Docker-Hub</a>是个公开可用的公共镜像注册服务。</li>
+</ol>
+<p>为了令三种组件在一起工作，需要在一个主机上运行<strong>Docker Daemon</strong>(或Docker Engine)，它会处理构建，运行，和分发容器的工作。另外，用户可以使用<strong>Docker客户端</strong>(Client)来与<strong>Docker Daemon</strong>进行命令交互。</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/architecture.png" alt="Docker Architecture Diagram"></p>
+<p>客户端可以与本地主机或其他主机通信，使用<code>pull</code>命令来请求<strong>Docker Daemon</strong>从注册服务拉取镜像，然后Docker Daemon会从Docker Hub或配置的其他注册服务下载镜像并安装，最后客户端使用<code>run</code>来运行容器。</p>
+<h2 id="Docker镜像-Docker-Image"><a href="#Docker镜像-Docker-Image" class="headerlink" title="Docker镜像(Docker Image)"></a>Docker镜像(Docker Image)</h2><p>上文我们说过Docker容器是从只读的Docker镜像启动的。每个镜像由一系列的层组成，Docker利用联合文件系统来将这些层合并到一个单独镜像中。 </p>
+<p>Docker镜像的层结构，令Docker变得轻量。当你是用虚拟机的时候，如要更新应用到新版本，你需要替换应用程序包然后重新构建整个虚拟机镜像，使用Docker仅仅醒要添加或修改一个层。你不需要分发整个镜像，仅仅需要更新，这领分发Docker镜像变得更快，更简单。</p>
+<p>每个镜像起始于一个基本镜像，例如<code>ubuntu</code>或<code>fedora</code>分别表示基本Ubuntu和Fedora操作系统的基本镜像。你也可以使用你自己的镜像作为基本镜像，例如如果你有一个基本Apache镜像，你可以用基于它构建新的应用镜像。</p>
+<blockquote>
+<p>默认情况下，Docker从[Docker Hub](Docker makes use of union file systems to combine these layers into a single image)获取这些基本镜像。</p>
+</blockquote>
+<p>Docker镜像使用简单易懂的指令集来从构建新镜像，其中<code>RUN，COPY，ADD</code>每个指令会在镜像中创建一个新的层，其他的指令会只会创建一个临时中间镜像，不会增加最终镜像的体积，例如：</p>
+<ol>
+<li><code>RUN</code> 运行一个命令</li>
+<li><code>ADD，COPY</code> 添加一个文件或文件夹</li>
+<li><code>ENV</code> 创建一个环境变量</li>
+<li><code>ENTRY_POINT，CMD</code> 在启动容器时运行一个进程</li>
+</ol>
+<p>这些指令存储在Dockerfile文件中。构建镜像时Docker Daemon会读取Dockerfile文件，执行其中的指令，生成最终镜像。</p>
+<p>假设有一个目录内容如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">.</span><br><span class="line">├── Dockerfile</span><br><span class="line">├── app.py</span><br><span class="line">└── requirements.txt</span><br></pre></td></tr></table></figure>
+
+<p>这个目录称为<strong>Docker Context</strong>，其中Dockerfile内容如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 使用官方的Python运行时镜像作为基本镜像</span></span><br><span class="line"><span class="keyword">FROM</span> python:<span class="number">2.7</span>-slim</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置工作目录 /app</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /app</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 拷贝当前目录内容到容器的/app目录中</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> . /app</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装requirements.txt文件中指定的依赖</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> pip install --trusted-host pypi.python.org -r requirements.txt</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 开放容器的80端口</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">80</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义一个环境变量</span></span><br><span class="line"><span class="keyword">ENV</span> NAME World</span><br><span class="line"></span><br><span class="line"><span class="comment"># 容器启动时执行“python app.py”</span></span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;python&quot;</span>, <span class="string">&quot;app.py&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<p>使用这个Docker Context即可构建一个开放80端口，容器启动后执行<code>python app.py</code>的镜像。</p>
+<p>完整的Dockerfile手册可以查看<a href="https://docs.docker.com/engine/reference/builder">官方文档</a>。</p>
+<p>构建命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker build -t friendlyhello . <span class="comment"># 注意最后的“.”表示使用当前目录作为Docker Context</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Docker容器-Docker-Container"><a href="#Docker容器-Docker-Container" class="headerlink" title="Docker容器(Docker Container)"></a>Docker容器(Docker Container)</h2><h3 id="容器的基本结构"><a href="#容器的基本结构" class="headerlink" title="容器的基本结构"></a>容器的基本结构</h3><p>容器由一个操作系统，用户添加的文件和元数据组成。每个容器都是从一个镜像构建的。镜像告诉Docker引擎容器的内容、容器启动的时候要运行什么进程以及各种各样其他的配置数据。Docker镜像是只读的，当Docker从一个镜像运行一个容器时，会在镜像顶层添加一个读写层，以便于你的应用可以正常运行读写数据。这个读写层与容器的生命周期相同，如果应用要持久化保存数据需要通过mount机制来与主机存储通信。</p>
+<p>容器和镜像的关系如下图所示：</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/container-layers.jpg" alt="Layers of a container based on the Ubuntu image"></p>
+<p>从镜像运行容器的命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -it friendlyhello</span><br></pre></td></tr></table></figure>
+
+<h3 id="容器与虚拟机对比"><a href="#容器与虚拟机对比" class="headerlink" title="容器与虚拟机对比"></a>容器与虚拟机对比</h3><p>开发人员可以简单的任务应用程序在容器中运行跟在虚拟机中运行的情况大体一致。但容器和虚拟机还是有本质区别的。</p>
+<p>容器原生运行在Linux操作系统中，与主机上的其他容器共享内核。运行运行一个独立的进程，内存占用与系统中执行的其他进程无异，这令容器非常轻量。</p>
+<p>与之对比的是虚拟机，它运行一个完整的客户端操作系统通过虚拟化技术（hypervisor）访问主机资源。通常虚拟机比大多数其他类型的应用程序要占用更多的资源来提供一个隔离的运行环境。</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190522103006562.png" alt="image-20190522103006562"></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Docker</th>
+<th>虚拟机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动速度</td>
+<td>几秒</td>
+<td>几分钟</td>
+</tr>
+<tr>
+<td>资源占用</td>
+<td>普通进程资源</td>
+<td>GustOS需要占用更多额外资源</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>直接跟系统内核交互几乎无损耗</td>
+<td>通过Hypervisor访问资源带来额外消耗</td>
+</tr>
+<tr>
+<td>隔离</td>
+<td>进程级别</td>
+<td>系统级别</td>
+</tr>
+<tr>
+<td>安全性</td>
+<td>工宿主机共享用户权限，安全性差</td>
+<td>GustOS具有独立用户权限，安全性更高</td>
+</tr>
+<tr>
+<td>可管理性</td>
+<td>云原生等概念促使相关工具迅速发展(例如k8s)</td>
+<td>发展多年已经比较成熟</td>
+</tr>
+<tr>
+<td>创建&#x2F;删除</td>
+<td>秒级别创建，适合快速迭代，节省大量时间</td>
+<td>分钟级别</td>
+</tr>
+<tr>
+<td>分发&#x2F;部署</td>
+<td>简单的Dockerfile，以及Docker Registry<br/>提供了快速分发能力<br>通过镜像保证分发环境一致</td>
+<td>通过虚拟机镜像分发，保证环境一致<br>没有Registry，无法体系化</td>
+</tr>
+<tr>
+<td>资源限制</td>
+<td>Linux的Control Group(cgroup)<br>部分应用无法正确识别到，比如Java7之前</td>
+<td>Hypervisor层的资源限制</td>
+</tr>
+<tr>
+<td>镜像</td>
+<td>小，几MB~几百MB，不可变</td>
+<td>大，数GB，需要配置管理</td>
+</tr>
+</tbody></table>
+<h2 id="Docker后台常驻进程-Docker-Daemon"><a href="#Docker后台常驻进程-Docker-Daemon" class="headerlink" title="Docker后台常驻进程(Docker Daemon)"></a>Docker后台常驻进程(Docker Daemon)</h2><p>在你的电脑上安装Docker的同时会安装Docker主机(docker host)。一旦创建了Docker主机就可以通过它管理镜像和容器。例如下载镜像，启停、重启容器。</p>
+<h2 id="Docker客户端-Docker-Client"><a href="#Docker客户端-Docker-Client" class="headerlink" title="Docker客户端(Docker Client)"></a>Docker客户端(Docker Client)</h2><p>客户端与Docker主机通信，令用户可以操作镜像和容器。</p>
+<p>可以通过如下命令检查当前主机上安装的Docker是否可以正常工作：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker -v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 正常会输出类似下面的文本：</span></span><br><span class="line">Docker version 17.09.0-ce-rc3, build 2357fb2</span><br></pre></td></tr></table></figure>
+
+<p>输出的版本号会随安装的Docker程序包变化。</p>
+<p>准确的客户端和服务端版本可以使用<code>docker version</code>命令查看，输出如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Client:</span><br><span class="line"> Version:      17.09.0-ce-rc3</span><br><span class="line"> API version:  1.32</span><br><span class="line"> Go version:   go1.8.3</span><br><span class="line"> Git commit:   2357fb2</span><br><span class="line"> Built:        Thu Sep 21 02:31:18 2017</span><br><span class="line"> OS/Arch:      darwin/amd64</span><br><span class="line"></span><br><span class="line">Server:</span><br><span class="line"> Version:      17.09.0-ce-rc3</span><br><span class="line"> API version:  1.32 (minimum version 1.12)</span><br><span class="line"> Go version:   go1.8.3</span><br><span class="line"> Git commit:   2357fb2</span><br><span class="line"> Built:        Thu Sep 21 02:36:52 2017</span><br><span class="line"> OS/Arch:      linux/amd64</span><br><span class="line"> Experimental: true</span><br></pre></td></tr></table></figure>
+
+<p>完整的指令列表可以使用<code>docker --help</code>命令查看,下面是常用命令表</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>镜像相关</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>当前目录作为Context构建镜像</td>
+<td><code>docker image build --rm=true .</code></td>
+</tr>
+<tr>
+<td>拉取镜像安装到本地</td>
+<td><code>docker image pull $&#123;IMAGE&#125;</code></td>
+</tr>
+<tr>
+<td>列出本地安装的镜像</td>
+<td><code>docker image ls</code></td>
+</tr>
+<tr>
+<td>列出本地安装的镜像(详细信息)</td>
+<td><code>docker image ls --no-trunc</code></td>
+</tr>
+<tr>
+<td>删除本地镜像</td>
+<td><code>docker image rm $&#123;IMAGE_ID&#125;</code></td>
+</tr>
+<tr>
+<td>删除所有无用的镜像(没有创建容器)</td>
+<td><code>docker image prune</code></td>
+</tr>
+<tr>
+<td>删除所有本地镜像</td>
+<td><code>docker image rm $(docker image ls -aq)</code></td>
+</tr>
+<tr>
+<td><strong>容器相关</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>运行容器</td>
+<td><code>docker container run</code></td>
+</tr>
+<tr>
+<td>列出所有运行中的容器</td>
+<td><code>docker container ls</code></td>
+</tr>
+<tr>
+<td>List of all containers</td>
+<td><code>docker container ls -a</code></td>
+</tr>
+<tr>
+<td>停止容器</td>
+<td><code>docker container stop $&#123;CID&#125;</code></td>
+</tr>
+<tr>
+<td>停止所有运行的容器</td>
+<td><code>docker container stop $(docker container ls -q)</code></td>
+</tr>
+<tr>
+<td>列出所有退出码为1的容器</td>
+<td><code>docker container ls -a --filter &quot;exited=1&quot;</code></td>
+</tr>
+<tr>
+<td>移除容器</td>
+<td><code>docker container rm $&#123;CID&#125;</code></td>
+</tr>
+<tr>
+<td>移除所有容器</td>
+<td><code>docker container rm $(docker container ls -aq)</code></td>
+</tr>
+<tr>
+<td>查找运行容器的ip地址</td>
+<td><code>docker container inspect --format &#39;&#123;&#123; NetworkSettings.IPAddress &#125;&#125;&#39; $&#123;CID&#125;</code></td>
+</tr>
+<tr>
+<td>关联到容器</td>
+<td><code>docker container attach $&#123;CID&#125;</code></td>
+</tr>
+<tr>
+<td>打开一个容器的命令行</td>
+<td><code>docker container exec -it $&#123;CID&#125; bash</code></td>
+</tr>
+</tbody></table>
+<h2 id="Docker应用数据管理"><a href="#Docker应用数据管理" class="headerlink" title="Docker应用数据管理"></a>Docker应用数据管理</h2><p>在<strong>Docker容器</strong>这个章节中有提到要持久化保存应用数据需要使用mount机制，本章详细说明Docker的应用数据管理。</p>
+<p>默认情况下容器中创建的所有文件存储在容器的读写层上，这意味着：</p>
+<ul>
+<li>当容器退出后数据不能持久化，并且容器外部的其他进程是很难访问到容器内部的数据的。</li>
+<li>容器的读写层与容器运行的主机紧密耦合，其中的数据很难移动到其他什么地方。</li>
+<li>痛惜需要使用<a href="https://docs.docker.com/storage/storagedriver">存储驱动</a>来管理文件系统，存储驱动会利用Linux内核提供一个统一文件系统。这个附加的抽象层降低了性能。</li>
+</ul>
+<p>Docker有两种方式来直接让容器存储文件到主机上，以便于文件即使在容器停止后也能吃就存储：volumes和bind mounts。如果是在Linux主机上运行Docker，那么还可以使用tmpfs。</p>
+<p>三种方式和容器的关系如下图所示：</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/types-of-mounts.png" alt="types of mounts and where they live on the Docker host"></p>
+<ul>
+<li><p><strong>Volumes</strong>存储在主机文件系统上的(<code>/var/lib/docker/volumes/</code> on Linux)，由Docker管理.。非Docker进程不应修改。Volumes是持久化数据的最佳方式。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker volume create <span class="comment"># 创建volume</span></span><br><span class="line">docker volume prune <span class="comment"># 移除无用的volume</span></span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p><strong>Bind mounts</strong>可以存储数据到主机系统的任意位置（内存或文件系统）。他们甚至有可能是重要的系统文件或目录。主机上的非Docker进程或Docker容器可以随时修改这些文件或目录。</p>
+</li>
+<li><p><strong>tmpfs mounts</strong>只存储在主机系统的内存中，永远不会写的主机系统文件系统中。</p>
+</li>
+</ul>
+<h3 id="Volumes使用场景"><a href="#Volumes使用场景" class="headerlink" title="Volumes使用场景"></a>Volumes使用场景</h3><p>Volumes是Docker容器和服务持久化数据的推荐方式，一些用例如下：</p>
+<ul>
+<li>多个运行的容器共享数据。如果没有显式创建Volume，volume会在第一次挂载到同期上的时候被创建。当同期停止或被移除时，这个volume依然存在。多个容器可以同时以读写或只读方式挂载同一个volume。Volumes只会能人工显式使用命令移除。</li>
+<li>如果Docker主机不一定有只能结构的文件夹或文件，Volumes会帮你解耦Docker主机和容器运行时的配置。</li>
+<li>如果你想存储容器的数据到远程主机或云服务上</li>
+<li>如果你需要备份备份，恢复或迁移数据从一个Docker主机到另一个，Volumes是更好的选择。你可以停止使用volume的容器，然后备份volume的文件夹(例如：&#x2F;var&#x2F;lib&#x2F;docker&#x2F;volumes&#x2F;&lt;volume-name&gt;)</li>
+</ul>
+<h3 id="Bind-mounts使用场景"><a href="#Bind-mounts使用场景" class="headerlink" title="Bind mounts使用场景"></a>Bind mounts使用场景</h3><p>一般来说应该尽可能使用Volumes，Bind mounts适用于一下用例：</p>
+<ul>
+<li><p>共享主机的配置文件给容器。默认情况下Docker通过挂载主机的<code>/etc/resolv.conf</code>文件给每个容器来提供DNS解析给容器。</p>
+</li>
+<li><p>在主机上的开发环境和容器间共享源代码或构件。例如你可以挂载Maven项目的<code>target/</code>到一个容器，这样每次在主机上构建Maven项目，容器就可以访问到重新构建的构件。</p>
+<p>如果在开发环境中一这种方式使用Docker，需要确保生产环境使用的Dockerfile将生产环境的构件直接拷贝到镜像中，而不能依赖<code>bind mount</code></p>
+</li>
+<li><p>当Docker主机上的文件或目录结构能够确保与容器需要的一致时，可以使用<code>bind mount</code></p>
+</li>
+</ul>
+<h3 id="tmpfs-mounts使用场景"><a href="#tmpfs-mounts使用场景" class="headerlink" title="tmpfs mounts使用场景"></a>tmpfs mounts使用场景</h3><p>如果你不想数据持久化存储在主机上或容器内，<code>tmpfs mount</code>是最佳方式。这可能是由于安全原因比如临时使用敏感数据，或当你的应用需要写大量的非持久化数据时提升容器的性能。</p>
+<h2 id="Docker网络"><a href="#Docker网络" class="headerlink" title="Docker网络"></a>Docker网络</h2><p>Docker容器和服务之所以这么强大的一个原因是可以将多个容器或服务连接在一起，甚至可以将容器和非容器进程连接在一起。Docker容器和服务不需要意识到他们是部署在Docker上的，也不关心与他们连接的是否是Docker容器。无论你的Docker主机运行在Linux，Window或者两者混合，你都可以使用Docker一平台无关的方式管理他们。</p>
+<h3 id="网络驱动"><a href="#网络驱动" class="headerlink" title="网络驱动"></a>网络驱动</h3><p>Docker的网络子系统是插件式的，默认的几个驱动提供了核心的网络功能：</p>
+<ul>
+<li><strong>bridge（桥接）：</strong>默认的网络驱动。如果不明确指定，它就是你创建的网络的类型。当你的应用运行在一些相互通信的独立容器中时，通常使用桥接网络。</li>
+<li><strong>host（主机）：</strong>对于独立的容器，移除容器和Docker主机的网络隔离，直接使用主机的网络。<code>host</code>只对Docker 17.06或以上的swarm服务可用。</li>
+<li><strong>overlay（叠加）：</strong>叠加网络将多个Docker daemon连接在一起，令swarm服务可以相互通信。也可以使用叠加网络令swarm服务或独立容器，或两个不同Docker daemon上的独立容器可以通信。这个策略不需要在多个容器间进行操作系统级别的路由。</li>
+<li><strong>macvlan：</strong>Maclan网络允许给一个容器分配一个MAC地址，令其在你的网络表现的像一个物理设备一样。Docker daemon将靠MAC地址来在容器间路由数据。当你的应用希望直接与物理网络通信时，使用macvlan或许是最佳选择。</li>
+<li><strong>none：</strong>禁止网络通信。通常与自定义网络驱动结合使用。none不能使用在swarm服务上。</li>
+<li><strong>Network plugins：</strong>Docker可以安装和使用第三方网络插件。这些插件可以同<a href="https://hub.docker.com/search/?category=network&q=&type=plugin">Docker Hub</a>获取，由第三方开发商提供。</li>
+</ul>
+<p>由于网络通常与容器编排有关，而容器编排是另外一个比较复杂的主题，所以在此仅对比较简单的<code>bridge</code>网络做进一步阐述。该类型网络的开发环境特别用有。</p>
+<h3 id="使用bridge网络"><a href="#使用bridge网络" class="headerlink" title="使用bridge网络"></a>使用bridge网络</h3><p>桥接网络只对运行在同一个Docker deamon上的容器有效。对于不同Docker daemon上的容器通信，你可以管理操作系统级别的路由或使用<code>overlay</code>网络。</p>
+<p>往Docker启动，会自动创建一个默认桥接网络（Default Bridge Network，下文简称DBN），新启动的容器如果没有特别指定会自动连接到这个默认桥接网络上。你也可以创建用户自定义的桥接网络（User-Defined Bridge Network，下文简称UDBN）。应当优先使用用户定义的桥接网络。</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/ro4000p255pp0o92qqn.jpg" alt="img"></p>
+<h4 id="用户定义的与默认桥接网络区别"><a href="#用户定义的与默认桥接网络区别" class="headerlink" title="用户定义的与默认桥接网络区别"></a>用户定义的与默认桥接网络区别</h4><ul>
+<li><p>UDBN提供更好的隔离性和容器间的交互性。</p>
+<p>连接到同一个UDBN的容器相互暴露所有的端口，但对外部世界不暴露任何端口。这让容器化的应用很容易与彼此通信，又不会意外对外部世界开放访问权限。</p>
+<p>想象一个场景，一个应用有一个web前端和一个数据库后端。外部世界需要通过80端口访问web前端，但是只有后端自己需要访问数据的主机和端口。利用UDBN只有web端口需要被开放，数据库应用不需要开放任何端口，因为web前端可以通过UDBN访问它。</p>
+<p>如果在DBN上运行同样的应用，你需要同时使用<code>-p</code>或<code>--publish</code>开放web端口和数据库端口，这意味着Docker主机需要通过其它方式组织对数据库端口的访问。</p>
+</li>
+<li><p>UDBN在容器间提供自动DNS解析</p>
+<p>在DBN上的容器只能通过IP地址进行彼此的访问，除非你使用<code>--link</code>来连接容器，这个参数已经过时了。在UDBN上容器可以通过名称和别名来解析彼此。</p>
+<p>再看前面提到的场景，如果将前端和后端容器分别命名为<code>web</code>和<code>db</code>，<code>web</code>容器可以通过<code>db</code>这个名称来访问数据库。</p>
+</li>
+<li><p>容器可以在运行中和UDBN连接或分离</p>
+<p>在整个容器的声明周期内，你可以随时与UDBN连接或断开。要从DBN中移除一个容器，需要停止通知并使用不同的网络选项重建它。</p>
+</li>
+<li><p>每个UDBN创建一个可配置的桥接</p>
+<p>如果你的容器使用DBN，你可以配置它，但是所有的容器只能使用相同的设置，例如<code>MTU</code>和<code>iptables</code>规则。另外，只能在Docker外部进行设置，需要重启Docker才能生效。</p>
+<p>UDBN使用<code>docker network create</code>创建和设置。如果不同组的应用有不同的网络需求，你可以为它们独立配置UDBN。</p>
+</li>
+<li><p>在DBN上关联的容器会共享环境变量</p>
+<p>起初在两个容器间共享环境变量的唯一方式是使用<code>--link</code>来连接他们。UDBN是不能以这种方式共享变量的。然而有更好的方式来共享环境变量。例如：</p>
+<ul>
+<li>多个容器使用一个Docker volume挂载一个包含共享信息的文件或目录。</li>
+<li>多个容器可以使用<code>docker-compose</code>一起启动，在compse文件中可以定义共享变量。</li>
+</ul>
+</li>
+</ul>
+<p>连接到同一个UDBN的容器跑彼此暴露所有的端口。对于需要被外部世界访问的端口必须使用<code>-p</code>或<code>--publish</code>进行公开发布。</p>
+<h4 id="管理UDBN"><a href="#管理UDBN" class="headerlink" title="管理UDBN"></a>管理UDBN</h4><p>使用<code>docker network create</code>命令创建UDBN</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker network create my-net</span><br></pre></td></tr></table></figure>
+
+<p>你可以指定子网，IP地址范围，网关和其他选项。可以通过<code>docker network create —help</code>查看<a href="https://docs.docker.com/engine/reference/commandline/network_create/#specify-advanced-options">具体细节</a>。</p>
+<p>使用<code>docker network rm</code>命令移除UDBN。如果有容器正连接到要移除的网络，需要先断开连接。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker network <span class="built_in">rm</span> my-net</span><br></pre></td></tr></table></figure>
+
+<h4 id="连接容器到UDBN"><a href="#连接容器到UDBN" class="headerlink" title="连接容器到UDBN"></a>连接容器到UDBN</h4><p>创建新容器时可以通过一个或多个<code>--network</code>选项来指定要连接到的网络。下面这个例子连接一个Nginx容器到<code>my-net</code>网络。同时公开了容器的80端口到Docker主机的8080端口映射，这样外部的客户端可以通过主机的8080端口访问到容器的80端口。连接到<code>my-net</code>网络的其他容器可以通过<code>my-nginx</code>这个名称访问所有的端口。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker create --name my-nginx \</span><br><span class="line">--network my-net \</span><br><span class="line">--publish 8080:80 \</span><br><span class="line">nginx:latest</span><br></pre></td></tr></table></figure>
+
+<p>要连接一个正在运行的容器到已存在的UDBN，使用<code>docker network connect</code>命令。下面的命令连接已经运行的<code>my-nginx</code>容器到已存在的<code>my-net</code>网络。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker network connect my-net my-nginx</span><br></pre></td></tr></table></figure>
+
+<h4 id="断开容器和UDBN的连接"><a href="#断开容器和UDBN的连接" class="headerlink" title="断开容器和UDBN的连接"></a>断开容器和UDBN的连接</h4><p>要断开一个正在运行的容器到UDBN的链接，使用<code>docker network disconnect</code>命令。下面的将<code>my-nginx</code>容器从<code>my-net</code>网络中断开。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker network disconnect my-net my-nginx</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+</search>

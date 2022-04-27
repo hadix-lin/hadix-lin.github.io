@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>hadix&#39; Konwledge Index</title>
+  
+  
+  <link href="https://hadix-lin.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://hadix-lin.github.io/"/>
+  <updated>2019-05-30T04:03:15.000Z</updated>
+  <id>https://hadix-lin.github.io/</id>
+  
+  <author>
+    <name>hadix</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Docker基础知识</title>
+    <link href="https://hadix-lin.github.io/2019/05/27/Docker%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"/>
+    <id>https://hadix-lin.github.io/2019/05/27/Docker%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</id>
+    <published>2019-05-27T06:53:05.000Z</published>
+    <updated>2019-05-30T04:03:15.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;引言&quot;&gt;&lt;a href=&quot;#引言&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="docker" scheme="https://hadix-lin.github.io/tags/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>在开发中使用Docker-续</title>
+    <link href="https://hadix-lin.github.io/2019/05/17/%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8Docker-%E7%BB%AD/"/>
+    <id>https://hadix-lin.github.io/2019/05/17/%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8Docker-%E7%BB%AD/</id>
+    <published>2019-05-17T13:23:04.000Z</published>
+    <updated>2019-05-28T06:39:30.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;blockquote&gt;
+&lt;p&gt;本文内容承接&lt;a href=&quot;/2019/05/15/use_docker_in_development.html&quot;&gt;上一篇：在开发中使用Docker&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;运行多个容器&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    
+    <category term="docker" scheme="https://hadix-lin.github.io/tags/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>在开发中使用Docker</title>
+    <link href="https://hadix-lin.github.io/2019/05/15/%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8Docker/"/>
+    <id>https://hadix-lin.github.io/2019/05/15/%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8Docker/</id>
+    <published>2019-05-14T16:17:30.000Z</published>
+    <updated>2019-05-28T06:39:23.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;引言&quot;&gt;&lt;a href=&quot;#引言&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="docker" scheme="https://hadix-lin.github.io/tags/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>我的IDEA插件列表</title>
+    <link href="https://hadix-lin.github.io/2019/05/10/%E6%88%91%E7%9A%84IDEA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8/"/>
+    <id>https://hadix-lin.github.io/2019/05/10/%E6%88%91%E7%9A%84IDEA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8/</id>
+    <published>2019-05-10T05:54:53.000Z</published>
+    <updated>2019-05-28T06:40:33.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;我算是个IDEA资深用户了,应该有10年了吧.&lt;/p&gt;
+&lt;p&gt;IDEA默认提供的插件功能已经相当丰富,对流行的开源框架支持非常好.&lt;/p&gt;
+&lt;p&gt;下面说一下我安装的非默认插件:&lt;/p&gt;
+&lt;h3 id=&quot;IdeaVim&quot;&gt;&lt;a href=&quot;#IdeaVim&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="IDE" scheme="https://hadix-lin.github.io/tags/IDE/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>改善编程体验: IdeaVimExtension介绍</title>
+    <link href="https://hadix-lin.github.io/2019/05/10/%E6%94%B9%E5%96%84%E7%BC%96%E7%A8%8B%E4%BD%93%E9%AA%8C-IdeaVimExtension%E4%BB%8B%E7%BB%8D/"/>
+    <id>https://hadix-lin.github.io/2019/05/10/%E6%94%B9%E5%96%84%E7%BC%96%E7%A8%8B%E4%BD%93%E9%AA%8C-IdeaVimExtension%E4%BB%8B%E7%BB%8D/</id>
+    <published>2019-05-10T03:43:00.000Z</published>
+    <updated>2019-06-04T08:46:48.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;动机&quot;&gt;&lt;a href=&quot;#动机&quot; class=&quot;headerlink&quot; title=&quot;动机&quot;&gt;&lt;/a&gt;动机&lt;/h2&gt;&lt;p&gt;Intellij</summary>
+        
+      
+    
+    
+    
+    
+    <category term="vim" scheme="https://hadix-lin.github.io/tags/vim/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>发布构件到maven中央仓</title>
+    <link href="https://hadix-lin.github.io/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/"/>
+    <id>https://hadix-lin.github.io/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/</id>
+    <published>2019-04-27T12:50:00.000Z</published>
+    <updated>2019-05-28T06:41:04.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;引言&quot;&gt;&lt;a href=&quot;#引言&quot; class=&quot;headerlink&quot; title=&quot;引言&quot;&gt;&lt;/a&gt;引言&lt;/h2&gt;&lt;p&gt;如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布&lt;a</summary>
+        
+      
+    
+    
+    
+    
+    <category term="tutorial" scheme="https://hadix-lin.github.io/tags/tutorial/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Code Smell : Deeply Nested Code : 深度嵌套的代码</title>
+    <link href="https://hadix-lin.github.io/2019/04/23/Deeply-Nested-Code/"/>
+    <id>https://hadix-lin.github.io/2019/04/23/Deeply-Nested-Code/</id>
+    <published>2019-04-23T13:30:00.000Z</published>
+    <updated>2019-05-28T06:42:23.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;问题概述&quot;&gt;&lt;a href=&quot;#问题概述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="coding" scheme="https://hadix-lin.github.io/tags/coding/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Code Smell : If-Statements : 条件语句</title>
+    <link href="https://hadix-lin.github.io/2019/04/23/If-Statements/"/>
+    <id>https://hadix-lin.github.io/2019/04/23/If-Statements/</id>
+    <published>2019-04-23T13:30:00.000Z</published>
+    <updated>2019-05-28T06:42:31.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;问题概述&quot;&gt;&lt;a href=&quot;#问题概述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="coding" scheme="https://hadix-lin.github.io/tags/coding/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Code Smell : Iteration : 迭代</title>
+    <link href="https://hadix-lin.github.io/2019/04/23/Iteration/"/>
+    <id>https://hadix-lin.github.io/2019/04/23/Iteration/</id>
+    <published>2019-04-23T13:30:00.000Z</published>
+    <updated>2019-05-28T06:42:38.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;问题概述&quot;&gt;&lt;a href=&quot;#问题概述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="coding" scheme="https://hadix-lin.github.io/tags/coding/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Code Smell: Multi-Responsibility Methods : 多职责方法</title>
+    <link href="https://hadix-lin.github.io/2019/04/23/Multi-Responsibility-Methods/"/>
+    <id>https://hadix-lin.github.io/2019/04/23/Multi-Responsibility-Methods/</id>
+    <published>2019-04-23T13:30:00.000Z</published>
+    <updated>2019-05-28T06:42:46.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;问题概述&quot;&gt;&lt;a href=&quot;#问题概述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="coding" scheme="https://hadix-lin.github.io/tags/coding/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Code Smell: Mutation : 突变</title>
+    <link href="https://hadix-lin.github.io/2019/04/23/Mutation/"/>
+    <id>https://hadix-lin.github.io/2019/04/23/Mutation/</id>
+    <published>2019-04-23T13:30:00.000Z</published>
+    <updated>2019-05-28T06:42:53.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;问题概述&quot;&gt;&lt;a href=&quot;#问题概述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="coding" scheme="https://hadix-lin.github.io/tags/coding/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Code Smell : Null : 空值</title>
+    <link href="https://hadix-lin.github.io/2019/04/23/Null/"/>
+    <id>https://hadix-lin.github.io/2019/04/23/Null/</id>
+    <published>2019-04-23T13:30:00.000Z</published>
+    <updated>2019-05-28T06:43:00.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Null表示什么&quot;&gt;&lt;a href=&quot;#Null表示什么&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="coding" scheme="https://hadix-lin.github.io/tags/coding/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Code Smell : Too Many Problems : 太多的问题</title>
+    <link href="https://hadix-lin.github.io/2019/04/23/Too-Many-Problems/"/>
+    <id>https://hadix-lin.github.io/2019/04/23/Too-Many-Problems/</id>
+    <published>2019-04-23T13:30:00.000Z</published>
+    <updated>2019-05-28T06:43:07.000Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    
+    <category term="coding" scheme="https://hadix-lin.github.io/tags/coding/"/>
+    
+  </entry>
+  
+</feed>

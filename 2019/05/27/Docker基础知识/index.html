@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.1.0">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"hadix-lin.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.11.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="引言打造便携(portable)的，轻量级的开发环境，是Docker吸引应用研发同学的主要原因。本文涉及的内容是我认为要实现这一目标，研发同学应当掌握的基本Docker知识。 本文内容源自Docker官方文档的翻译，简化和重组。下文中会有一些到官方文档的连接，方便希望进一步学习Docker知识的同学。 安装Docker Desktop for Mac在mac中安装docker可以通过homebre">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker基础知识">
+<meta property="og:url" content="https://hadix-lin.github.io/2019/05/27/Docker%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/index.html">
+<meta property="og:site_name" content="hadix&#39; Konwledge Index">
+<meta property="og:description" content="引言打造便携(portable)的，轻量级的开发环境，是Docker吸引应用研发同学的主要原因。本文涉及的内容是我认为要实现这一目标，研发同学应当掌握的基本Docker知识。 本文内容源自Docker官方文档的翻译，简化和重组。下文中会有一些到官方文档的连接，方便希望进一步学习Docker知识的同学。 安装Docker Desktop for Mac在mac中安装docker可以通过homebre">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/engine-components-flow.png">
+<meta property="og:image" content="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/architecture.png">
+<meta property="og:image" content="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/container-layers.jpg">
+<meta property="og:image" content="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190522103006562.png">
+<meta property="og:image" content="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/types-of-mounts.png">
+<meta property="og:image" content="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/ro4000p255pp0o92qqn.jpg">
+<meta property="article:published_time" content="2019-05-27T06:53:05.000Z">
+<meta property="article:modified_time" content="2019-05-30T04:03:15.000Z">
+<meta property="article:author" content="hadix">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/engine-components-flow.png">
+
+
+<link rel="canonical" href="https://hadix-lin.github.io/2019/05/27/Docker%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://hadix-lin.github.io/2019/05/27/Docker%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/","path":"2019/05/27/Docker基础知识/","title":"Docker基础知识"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Docker基础知识 | hadix' Konwledge Index</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?eb0180d9d8c34a440a7d05bcaf981b97"></script>
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="hadix' Konwledge Index" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">hadix' Konwledge Index</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85Docker-Desktop-for-Mac"><span class="nav-number">2.</span> <span class="nav-text">安装Docker Desktop for Mac</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.</span> <span class="nav-text">应用操作系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E5%BC%95%E6%93%8E-Docker-Engine"><span class="nav-number">4.</span> <span class="nav-text">Docker引擎(Docker Engine)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E7%BB%84%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">主要组件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E9%95%9C%E5%83%8F-Docker-Image"><span class="nav-number">6.</span> <span class="nav-text">Docker镜像(Docker Image)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E5%AE%B9%E5%99%A8-Docker-Container"><span class="nav-number">7.</span> <span class="nav-text">Docker容器(Docker Container)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="nav-number">7.1.</span> <span class="nav-text">容器的基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E4%B8%8E%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AF%B9%E6%AF%94"><span class="nav-number">7.2.</span> <span class="nav-text">容器与虚拟机对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E5%90%8E%E5%8F%B0%E5%B8%B8%E9%A9%BB%E8%BF%9B%E7%A8%8B-Docker-Daemon"><span class="nav-number">8.</span> <span class="nav-text">Docker后台常驻进程(Docker Daemon)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E5%AE%A2%E6%88%B7%E7%AB%AF-Docker-Client"><span class="nav-number">9.</span> <span class="nav-text">Docker客户端(Docker Client)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E5%BA%94%E7%94%A8%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86"><span class="nav-number">10.</span> <span class="nav-text">Docker应用数据管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Volumes%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">10.1.</span> <span class="nav-text">Volumes使用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bind-mounts%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">10.2.</span> <span class="nav-text">Bind mounts使用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tmpfs-mounts%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">10.3.</span> <span class="nav-text">tmpfs mounts使用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E7%BD%91%E7%BB%9C"><span class="nav-number">11.</span> <span class="nav-text">Docker网络</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E9%A9%B1%E5%8A%A8"><span class="nav-number">11.1.</span> <span class="nav-text">网络驱动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8bridge%E7%BD%91%E7%BB%9C"><span class="nav-number">11.2.</span> <span class="nav-text">使用bridge网络</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E5%AE%9A%E4%B9%89%E7%9A%84%E4%B8%8E%E9%BB%98%E8%AE%A4%E6%A1%A5%E6%8E%A5%E7%BD%91%E7%BB%9C%E5%8C%BA%E5%88%AB"><span class="nav-number">11.2.1.</span> <span class="nav-text">用户定义的与默认桥接网络区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%A1%E7%90%86UDBN"><span class="nav-number">11.2.2.</span> <span class="nav-text">管理UDBN</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%9E%E6%8E%A5%E5%AE%B9%E5%99%A8%E5%88%B0UDBN"><span class="nav-number">11.2.3.</span> <span class="nav-text">连接容器到UDBN</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%AD%E5%BC%80%E5%AE%B9%E5%99%A8%E5%92%8CUDBN%E7%9A%84%E8%BF%9E%E6%8E%A5"><span class="nav-number">11.2.4.</span> <span class="nav-text">断开容器和UDBN的连接</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">hadix</p>
+  <div class="site-description" itemprop="description">hadix的知识索引</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="sidebar-button site-overview-item animated">
+    <button><i class="fa fa-comment"></i>
+      Chat
+    </button>
+  </div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hadix-lin" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hadix-lin" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:hadixlin@gmail.com" title="E-Mail → mailto:hadixlin@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/hadix-lin" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/05/27/Docker%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="hadix">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Konwledge Index">
+      <meta itemprop="description" content="hadix的知识索引">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Docker基础知识 | hadix' Konwledge Index">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Docker基础知识
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-05-27 14:53:05" itemprop="dateCreated datePublished" datetime="2019-05-27T14:53:05+08:00">2019-05-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2019-05-30 12:03:15" itemprop="dateModified" datetime="2019-05-30T12:03:15+08:00">2019-05-30</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>打造便携(portable)的，轻量级的开发环境，是Docker吸引应用研发同学的主要原因。本文涉及的内容是我认为要实现这一目标，研发同学应当掌握的基本Docker知识。</p>
+<p>本文内容源自Docker官方文档的翻译，简化和重组。下文中会有一些到官方文档的连接，方便希望进一步学习Docker知识的同学。</p>
+<h2 id="安装Docker-Desktop-for-Mac"><a href="#安装Docker-Desktop-for-Mac" class="headerlink" title="安装Docker Desktop for Mac"></a>安装Docker Desktop for Mac</h2><p>在mac中安装docker可以通过homebrew进行安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">brew cask install docker</span><br><span class="line"><span class="comment">## 验证安装是否成功</span></span><br><span class="line">docker --<span class="built_in">help</span> </span><br></pre></td></tr></table></figure>
+
+<p>也可以到参照文档进行手动下载安装</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.docker.com/docker-for-windows/install/">Docker Desktop for Windows 的安装文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.docker.com/docker-for-mac/install/">Docker Desktop for Mac 的安装文档</a></li>
+</ul>
+<h2 id="应用操作系统"><a href="#应用操作系统" class="headerlink" title="应用操作系统"></a>应用操作系统</h2><p>我们开发一个应用通常需要如下依赖</p>
+<ul>
+<li>指定版本的操作系统，JDK，数据库</li>
+<li>经过一些调整的配置文件</li>
+<li>绑定指定的端口并占用一定数量的内存</li>
+<li>其他类似的依赖，比如环境变量</li>
+</ul>
+<p>应用运行需要的这些组件和配置组织在一起，我们称之为”<strong>应用操作系统</strong>“</p>
+<p>你可以提供一个安装脚本来下载安装这些依赖组件和配置。Docker简化了这个过程，使用Docker可以创建一个包含你的应用和它的基础设施的镜像，然后可以在容器虚拟化平台上通过容器来运行这个镜像。</p>
+<h2 id="Docker引擎-Docker-Engine"><a href="#Docker引擎-Docker-Engine" class="headerlink" title="Docker引擎(Docker Engine)"></a>Docker引擎(Docker Engine)</h2><p>Docker引擎是一个客户端-服务器应用程序，包含以下组件：</p>
+<ul>
+<li>一个服务端，它长期运行在后台，称为daemon进程，通过<code>dockerd</code>启动。</li>
+<li>一组用于跟daemon进程通信的REST API，用于给daemon发送指令。</li>
+<li>一个命令行接口客户端(CLI)，使用<code>docker</code>命令启动。</li>
+</ul>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/engine-components-flow.png" alt="Docker Engine Components Flow"></p>
+<p>命令行通过Docker REST API与daemon进程进行通信交互，向其发送脚本或命令。许多七大的Docker应用程序会使用底层API和命令行接口。</p>
+<p>daemon进程会创建和管理Docker组件例如镜像(Images)，容器(containers)，网络(networks)，卷(volume)</p>
+<h2 id="主要组件"><a href="#主要组件" class="headerlink" title="主要组件"></a>主要组件</h2><p>Docker具有三个主要组件：</p>
+<ol>
+<li>镜像是Docker的<strong>构建组件</strong>，它是定义了<strong>应用操作系统</strong>只读模板。</li>
+<li>容器是从镜像创建的Docker<strong>运行组件</strong>。容器可以运行有，启动，停止，迁移和删除。</li>
+<li>镜像是Docker的<strong>分发组件</strong>，被存储在注册服务中并通过该服务进行共享和管理。<a target="_blank" rel="noopener" href="https://hub.docker.com/">Docker-Hub</a>是个公开可用的公共镜像注册服务。</li>
+</ol>
+<p>为了令三种组件在一起工作，需要在一个主机上运行<strong>Docker Daemon</strong>(或Docker Engine)，它会处理构建，运行，和分发容器的工作。另外，用户可以使用<strong>Docker客户端</strong>(Client)来与<strong>Docker Daemon</strong>进行命令交互。</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/architecture.png" alt="Docker Architecture Diagram"></p>
+<p>客户端可以与本地主机或其他主机通信，使用<code>pull</code>命令来请求<strong>Docker Daemon</strong>从注册服务拉取镜像，然后Docker Daemon会从Docker Hub或配置的其他注册服务下载镜像并安装，最后客户端使用<code>run</code>来运行容器。</p>
+<h2 id="Docker镜像-Docker-Image"><a href="#Docker镜像-Docker-Image" class="headerlink" title="Docker镜像(Docker Image)"></a>Docker镜像(Docker Image)</h2><p>上文我们说过Docker容器是从只读的Docker镜像启动的。每个镜像由一系列的层组成，Docker利用联合文件系统来将这些层合并到一个单独镜像中。 </p>
+<p>Docker镜像的层结构，令Docker变得轻量。当你是用虚拟机的时候，如要更新应用到新版本，你需要替换应用程序包然后重新构建整个虚拟机镜像，使用Docker仅仅醒要添加或修改一个层。你不需要分发整个镜像，仅仅需要更新，这领分发Docker镜像变得更快，更简单。</p>
+<p>每个镜像起始于一个基本镜像，例如<code>ubuntu</code>或<code>fedora</code>分别表示基本Ubuntu和Fedora操作系统的基本镜像。你也可以使用你自己的镜像作为基本镜像，例如如果你有一个基本Apache镜像，你可以用基于它构建新的应用镜像。</p>
+<blockquote>
+<p>默认情况下，Docker从[Docker Hub](Docker makes use of union file systems to combine these layers into a single image)获取这些基本镜像。</p>
+</blockquote>
+<p>Docker镜像使用简单易懂的指令集来从构建新镜像，其中<code>RUN，COPY，ADD</code>每个指令会在镜像中创建一个新的层，其他的指令会只会创建一个临时中间镜像，不会增加最终镜像的体积，例如：</p>
+<ol>
+<li><code>RUN</code> 运行一个命令</li>
+<li><code>ADD，COPY</code> 添加一个文件或文件夹</li>
+<li><code>ENV</code> 创建一个环境变量</li>
+<li><code>ENTRY_POINT，CMD</code> 在启动容器时运行一个进程</li>
+</ol>
+<p>这些指令存储在Dockerfile文件中。构建镜像时Docker Daemon会读取Dockerfile文件，执行其中的指令，生成最终镜像。</p>
+<p>假设有一个目录内容如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── Dockerfile</span><br><span class="line">├── app.py</span><br><span class="line">└── requirements.txt</span><br></pre></td></tr></table></figure>
+
+<p>这个目录称为<strong>Docker Context</strong>，其中Dockerfile内容如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用官方的Python运行时镜像作为基本镜像</span></span><br><span class="line"><span class="keyword">FROM</span> python:<span class="number">2.7</span>-slim</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置工作目录 /app</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /app</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 拷贝当前目录内容到容器的/app目录中</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> . /app</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装requirements.txt文件中指定的依赖</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> pip install --trusted-host pypi.python.org -r requirements.txt</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 开放容器的80端口</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">80</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义一个环境变量</span></span><br><span class="line"><span class="keyword">ENV</span> NAME World</span><br><span class="line"></span><br><span class="line"><span class="comment"># 容器启动时执行“python app.py”</span></span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;python&quot;</span>, <span class="string">&quot;app.py&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<p>使用这个Docker Context即可构建一个开放80端口，容器启动后执行<code>python app.py</code>的镜像。</p>
+<p>完整的Dockerfile手册可以查看<a target="_blank" rel="noopener" href="https://docs.docker.com/engine/reference/builder">官方文档</a>。</p>
+<p>构建命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t friendlyhello . <span class="comment"># 注意最后的“.”表示使用当前目录作为Docker Context</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Docker容器-Docker-Container"><a href="#Docker容器-Docker-Container" class="headerlink" title="Docker容器(Docker Container)"></a>Docker容器(Docker Container)</h2><h3 id="容器的基本结构"><a href="#容器的基本结构" class="headerlink" title="容器的基本结构"></a>容器的基本结构</h3><p>容器由一个操作系统，用户添加的文件和元数据组成。每个容器都是从一个镜像构建的。镜像告诉Docker引擎容器的内容、容器启动的时候要运行什么进程以及各种各样其他的配置数据。Docker镜像是只读的，当Docker从一个镜像运行一个容器时，会在镜像顶层添加一个读写层，以便于你的应用可以正常运行读写数据。这个读写层与容器的生命周期相同，如果应用要持久化保存数据需要通过mount机制来与主机存储通信。</p>
+<p>容器和镜像的关系如下图所示：</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/container-layers.jpg" alt="Layers of a container based on the Ubuntu image"></p>
+<p>从镜像运行容器的命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it friendlyhello</span><br></pre></td></tr></table></figure>
+
+<h3 id="容器与虚拟机对比"><a href="#容器与虚拟机对比" class="headerlink" title="容器与虚拟机对比"></a>容器与虚拟机对比</h3><p>开发人员可以简单的任务应用程序在容器中运行跟在虚拟机中运行的情况大体一致。但容器和虚拟机还是有本质区别的。</p>
+<p>容器原生运行在Linux操作系统中，与主机上的其他容器共享内核。运行运行一个独立的进程，内存占用与系统中执行的其他进程无异，这令容器非常轻量。</p>
+<p>与之对比的是虚拟机，它运行一个完整的客户端操作系统通过虚拟化技术（hypervisor）访问主机资源。通常虚拟机比大多数其他类型的应用程序要占用更多的资源来提供一个隔离的运行环境。</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/image-20190522103006562.png" alt="image-20190522103006562"></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Docker</th>
+<th>虚拟机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动速度</td>
+<td>几秒</td>
+<td>几分钟</td>
+</tr>
+<tr>
+<td>资源占用</td>
+<td>普通进程资源</td>
+<td>GustOS需要占用更多额外资源</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>直接跟系统内核交互几乎无损耗</td>
+<td>通过Hypervisor访问资源带来额外消耗</td>
+</tr>
+<tr>
+<td>隔离</td>
+<td>进程级别</td>
+<td>系统级别</td>
+</tr>
+<tr>
+<td>安全性</td>
+<td>工宿主机共享用户权限，安全性差</td>
+<td>GustOS具有独立用户权限，安全性更高</td>
+</tr>
+<tr>
+<td>可管理性</td>
+<td>云原生等概念促使相关工具迅速发展(例如k8s)</td>
+<td>发展多年已经比较成熟</td>
+</tr>
+<tr>
+<td>创建&#x2F;删除</td>
+<td>秒级别创建，适合快速迭代，节省大量时间</td>
+<td>分钟级别</td>
+</tr>
+<tr>
+<td>分发&#x2F;部署</td>
+<td>简单的Dockerfile，以及Docker Registry<br/>提供了快速分发能力<br>通过镜像保证分发环境一致</td>
+<td>通过虚拟机镜像分发，保证环境一致<br>没有Registry，无法体系化</td>
+</tr>
+<tr>
+<td>资源限制</td>
+<td>Linux的Control Group(cgroup)<br>部分应用无法正确识别到，比如Java7之前</td>
+<td>Hypervisor层的资源限制</td>
+</tr>
+<tr>
+<td>镜像</td>
+<td>小，几MB~几百MB，不可变</td>
+<td>大，数GB，需要配置管理</td>
+</tr>
+</tbody></table>
+<h2 id="Docker后台常驻进程-Docker-Daemon"><a href="#Docker后台常驻进程-Docker-Daemon" class="headerlink" title="Docker后台常驻进程(Docker Daemon)"></a>Docker后台常驻进程(Docker Daemon)</h2><p>在你的电脑上安装Docker的同时会安装Docker主机(docker host)。一旦创建了Docker主机就可以通过它管理镜像和容器。例如下载镜像，启停、重启容器。</p>
+<h2 id="Docker客户端-Docker-Client"><a href="#Docker客户端-Docker-Client" class="headerlink" title="Docker客户端(Docker Client)"></a>Docker客户端(Docker Client)</h2><p>客户端与Docker主机通信，令用户可以操作镜像和容器。</p>
+<p>可以通过如下命令检查当前主机上安装的Docker是否可以正常工作：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker -v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 正常会输出类似下面的文本：</span></span><br><span class="line">Docker version 17.09.0-ce-rc3, build 2357fb2</span><br></pre></td></tr></table></figure>
+
+<p>输出的版本号会随安装的Docker程序包变化。</p>
+<p>准确的客户端和服务端版本可以使用<code>docker version</code>命令查看，输出如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Client:</span><br><span class="line"> Version:      17.09.0-ce-rc3</span><br><span class="line"> API version:  1.32</span><br><span class="line"> Go version:   go1.8.3</span><br><span class="line"> Git commit:   2357fb2</span><br><span class="line"> Built:        Thu Sep 21 02:31:18 2017</span><br><span class="line"> OS/Arch:      darwin/amd64</span><br><span class="line"></span><br><span class="line">Server:</span><br><span class="line"> Version:      17.09.0-ce-rc3</span><br><span class="line"> API version:  1.32 (minimum version 1.12)</span><br><span class="line"> Go version:   go1.8.3</span><br><span class="line"> Git commit:   2357fb2</span><br><span class="line"> Built:        Thu Sep 21 02:36:52 2017</span><br><span class="line"> OS/Arch:      linux/amd64</span><br><span class="line"> Experimental: true</span><br></pre></td></tr></table></figure>
+
+<p>完整的指令列表可以使用<code>docker --help</code>命令查看,下面是常用命令表</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>镜像相关</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>当前目录作为Context构建镜像</td>
+<td><code>docker image build --rm=true .</code></td>
+</tr>
+<tr>
+<td>拉取镜像安装到本地</td>
+<td><code>docker image pull $&#123;IMAGE&#125;</code></td>
+</tr>
+<tr>
+<td>列出本地安装的镜像</td>
+<td><code>docker image ls</code></td>
+</tr>
+<tr>
+<td>列出本地安装的镜像(详细信息)</td>
+<td><code>docker image ls --no-trunc</code></td>
+</tr>
+<tr>
+<td>删除本地镜像</td>
+<td><code>docker image rm $&#123;IMAGE_ID&#125;</code></td>
+</tr>
+<tr>
+<td>删除所有无用的镜像(没有创建容器)</td>
+<td><code>docker image prune</code></td>
+</tr>
+<tr>
+<td>删除所有本地镜像</td>
+<td><code>docker image rm $(docker image ls -aq)</code></td>
+</tr>
+<tr>
+<td><strong>容器相关</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>运行容器</td>
+<td><code>docker container run</code></td>
+</tr>
+<tr>
+<td>列出所有运行中的容器</td>
+<td><code>docker container ls</code></td>
+</tr>
+<tr>
+<td>List of all containers</td>
+<td><code>docker container ls -a</code></td>
+</tr>
+<tr>
+<td>停止容器</td>
+<td><code>docker container stop $&#123;CID&#125;</code></td>
+</tr>
+<tr>
+<td>停止所有运行的容器</td>
+<td><code>docker container stop $(docker container ls -q)</code></td>
+</tr>
+<tr>
+<td>列出所有退出码为1的容器</td>
+<td><code>docker container ls -a --filter &quot;exited=1&quot;</code></td>
+</tr>
+<tr>
+<td>移除容器</td>
+<td><code>docker container rm $&#123;CID&#125;</code></td>
+</tr>
+<tr>
+<td>移除所有容器</td>
+<td><code>docker container rm $(docker container ls -aq)</code></td>
+</tr>
+<tr>
+<td>查找运行容器的ip地址</td>
+<td><code>docker container inspect --format &#39;&#123;&#123; NetworkSettings.IPAddress &#125;&#125;&#39; $&#123;CID&#125;</code></td>
+</tr>
+<tr>
+<td>关联到容器</td>
+<td><code>docker container attach $&#123;CID&#125;</code></td>
+</tr>
+<tr>
+<td>打开一个容器的命令行</td>
+<td><code>docker container exec -it $&#123;CID&#125; bash</code></td>
+</tr>
+</tbody></table>
+<h2 id="Docker应用数据管理"><a href="#Docker应用数据管理" class="headerlink" title="Docker应用数据管理"></a>Docker应用数据管理</h2><p>在<strong>Docker容器</strong>这个章节中有提到要持久化保存应用数据需要使用mount机制，本章详细说明Docker的应用数据管理。</p>
+<p>默认情况下容器中创建的所有文件存储在容器的读写层上，这意味着：</p>
+<ul>
+<li>当容器退出后数据不能持久化，并且容器外部的其他进程是很难访问到容器内部的数据的。</li>
+<li>容器的读写层与容器运行的主机紧密耦合，其中的数据很难移动到其他什么地方。</li>
+<li>痛惜需要使用<a target="_blank" rel="noopener" href="https://docs.docker.com/storage/storagedriver">存储驱动</a>来管理文件系统，存储驱动会利用Linux内核提供一个统一文件系统。这个附加的抽象层降低了性能。</li>
+</ul>
+<p>Docker有两种方式来直接让容器存储文件到主机上，以便于文件即使在容器停止后也能吃就存储：volumes和bind mounts。如果是在Linux主机上运行Docker，那么还可以使用tmpfs。</p>
+<p>三种方式和容器的关系如下图所示：</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/types-of-mounts.png" alt="types of mounts and where they live on the Docker host"></p>
+<ul>
+<li><p><strong>Volumes</strong>存储在主机文件系统上的(<code>/var/lib/docker/volumes/</code> on Linux)，由Docker管理.。非Docker进程不应修改。Volumes是持久化数据的最佳方式。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker volume create <span class="comment"># 创建volume</span></span><br><span class="line">docker volume prune <span class="comment"># 移除无用的volume</span></span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p><strong>Bind mounts</strong>可以存储数据到主机系统的任意位置（内存或文件系统）。他们甚至有可能是重要的系统文件或目录。主机上的非Docker进程或Docker容器可以随时修改这些文件或目录。</p>
+</li>
+<li><p><strong>tmpfs mounts</strong>只存储在主机系统的内存中，永远不会写的主机系统文件系统中。</p>
+</li>
+</ul>
+<h3 id="Volumes使用场景"><a href="#Volumes使用场景" class="headerlink" title="Volumes使用场景"></a>Volumes使用场景</h3><p>Volumes是Docker容器和服务持久化数据的推荐方式，一些用例如下：</p>
+<ul>
+<li>多个运行的容器共享数据。如果没有显式创建Volume，volume会在第一次挂载到同期上的时候被创建。当同期停止或被移除时，这个volume依然存在。多个容器可以同时以读写或只读方式挂载同一个volume。Volumes只会能人工显式使用命令移除。</li>
+<li>如果Docker主机不一定有只能结构的文件夹或文件，Volumes会帮你解耦Docker主机和容器运行时的配置。</li>
+<li>如果你想存储容器的数据到远程主机或云服务上</li>
+<li>如果你需要备份备份，恢复或迁移数据从一个Docker主机到另一个，Volumes是更好的选择。你可以停止使用volume的容器，然后备份volume的文件夹(例如：&#x2F;var&#x2F;lib&#x2F;docker&#x2F;volumes&#x2F;&lt;volume-name&gt;)</li>
+</ul>
+<h3 id="Bind-mounts使用场景"><a href="#Bind-mounts使用场景" class="headerlink" title="Bind mounts使用场景"></a>Bind mounts使用场景</h3><p>一般来说应该尽可能使用Volumes，Bind mounts适用于一下用例：</p>
+<ul>
+<li><p>共享主机的配置文件给容器。默认情况下Docker通过挂载主机的<code>/etc/resolv.conf</code>文件给每个容器来提供DNS解析给容器。</p>
+</li>
+<li><p>在主机上的开发环境和容器间共享源代码或构件。例如你可以挂载Maven项目的<code>target/</code>到一个容器，这样每次在主机上构建Maven项目，容器就可以访问到重新构建的构件。</p>
+<p>如果在开发环境中一这种方式使用Docker，需要确保生产环境使用的Dockerfile将生产环境的构件直接拷贝到镜像中，而不能依赖<code>bind mount</code></p>
+</li>
+<li><p>当Docker主机上的文件或目录结构能够确保与容器需要的一致时，可以使用<code>bind mount</code></p>
+</li>
+</ul>
+<h3 id="tmpfs-mounts使用场景"><a href="#tmpfs-mounts使用场景" class="headerlink" title="tmpfs mounts使用场景"></a>tmpfs mounts使用场景</h3><p>如果你不想数据持久化存储在主机上或容器内，<code>tmpfs mount</code>是最佳方式。这可能是由于安全原因比如临时使用敏感数据，或当你的应用需要写大量的非持久化数据时提升容器的性能。</p>
+<h2 id="Docker网络"><a href="#Docker网络" class="headerlink" title="Docker网络"></a>Docker网络</h2><p>Docker容器和服务之所以这么强大的一个原因是可以将多个容器或服务连接在一起，甚至可以将容器和非容器进程连接在一起。Docker容器和服务不需要意识到他们是部署在Docker上的，也不关心与他们连接的是否是Docker容器。无论你的Docker主机运行在Linux，Window或者两者混合，你都可以使用Docker一平台无关的方式管理他们。</p>
+<h3 id="网络驱动"><a href="#网络驱动" class="headerlink" title="网络驱动"></a>网络驱动</h3><p>Docker的网络子系统是插件式的，默认的几个驱动提供了核心的网络功能：</p>
+<ul>
+<li><strong>bridge（桥接）：</strong>默认的网络驱动。如果不明确指定，它就是你创建的网络的类型。当你的应用运行在一些相互通信的独立容器中时，通常使用桥接网络。</li>
+<li><strong>host（主机）：</strong>对于独立的容器，移除容器和Docker主机的网络隔离，直接使用主机的网络。<code>host</code>只对Docker 17.06或以上的swarm服务可用。</li>
+<li><strong>overlay（叠加）：</strong>叠加网络将多个Docker daemon连接在一起，令swarm服务可以相互通信。也可以使用叠加网络令swarm服务或独立容器，或两个不同Docker daemon上的独立容器可以通信。这个策略不需要在多个容器间进行操作系统级别的路由。</li>
+<li><strong>macvlan：</strong>Maclan网络允许给一个容器分配一个MAC地址，令其在你的网络表现的像一个物理设备一样。Docker daemon将靠MAC地址来在容器间路由数据。当你的应用希望直接与物理网络通信时，使用macvlan或许是最佳选择。</li>
+<li><strong>none：</strong>禁止网络通信。通常与自定义网络驱动结合使用。none不能使用在swarm服务上。</li>
+<li><strong>Network plugins：</strong>Docker可以安装和使用第三方网络插件。这些插件可以同<a target="_blank" rel="noopener" href="https://hub.docker.com/search/?category=network&q=&type=plugin">Docker Hub</a>获取，由第三方开发商提供。</li>
+</ul>
+<p>由于网络通常与容器编排有关，而容器编排是另外一个比较复杂的主题，所以在此仅对比较简单的<code>bridge</code>网络做进一步阐述。该类型网络的开发环境特别用有。</p>
+<h3 id="使用bridge网络"><a href="#使用bridge网络" class="headerlink" title="使用bridge网络"></a>使用bridge网络</h3><p>桥接网络只对运行在同一个Docker deamon上的容器有效。对于不同Docker daemon上的容器通信，你可以管理操作系统级别的路由或使用<code>overlay</code>网络。</p>
+<p>往Docker启动，会自动创建一个默认桥接网络（Default Bridge Network，下文简称DBN），新启动的容器如果没有特别指定会自动连接到这个默认桥接网络上。你也可以创建用户自定义的桥接网络（User-Defined Bridge Network，下文简称UDBN）。应当优先使用用户定义的桥接网络。</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/ro4000p255pp0o92qqn.jpg" alt="img"></p>
+<h4 id="用户定义的与默认桥接网络区别"><a href="#用户定义的与默认桥接网络区别" class="headerlink" title="用户定义的与默认桥接网络区别"></a>用户定义的与默认桥接网络区别</h4><ul>
+<li><p>UDBN提供更好的隔离性和容器间的交互性。</p>
+<p>连接到同一个UDBN的容器相互暴露所有的端口，但对外部世界不暴露任何端口。这让容器化的应用很容易与彼此通信，又不会意外对外部世界开放访问权限。</p>
+<p>想象一个场景，一个应用有一个web前端和一个数据库后端。外部世界需要通过80端口访问web前端，但是只有后端自己需要访问数据的主机和端口。利用UDBN只有web端口需要被开放，数据库应用不需要开放任何端口，因为web前端可以通过UDBN访问它。</p>
+<p>如果在DBN上运行同样的应用，你需要同时使用<code>-p</code>或<code>--publish</code>开放web端口和数据库端口，这意味着Docker主机需要通过其它方式组织对数据库端口的访问。</p>
+</li>
+<li><p>UDBN在容器间提供自动DNS解析</p>
+<p>在DBN上的容器只能通过IP地址进行彼此的访问，除非你使用<code>--link</code>来连接容器，这个参数已经过时了。在UDBN上容器可以通过名称和别名来解析彼此。</p>
+<p>再看前面提到的场景，如果将前端和后端容器分别命名为<code>web</code>和<code>db</code>，<code>web</code>容器可以通过<code>db</code>这个名称来访问数据库。</p>
+</li>
+<li><p>容器可以在运行中和UDBN连接或分离</p>
+<p>在整个容器的声明周期内，你可以随时与UDBN连接或断开。要从DBN中移除一个容器，需要停止通知并使用不同的网络选项重建它。</p>
+</li>
+<li><p>每个UDBN创建一个可配置的桥接</p>
+<p>如果你的容器使用DBN，你可以配置它，但是所有的容器只能使用相同的设置，例如<code>MTU</code>和<code>iptables</code>规则。另外，只能在Docker外部进行设置，需要重启Docker才能生效。</p>
+<p>UDBN使用<code>docker network create</code>创建和设置。如果不同组的应用有不同的网络需求，你可以为它们独立配置UDBN。</p>
+</li>
+<li><p>在DBN上关联的容器会共享环境变量</p>
+<p>起初在两个容器间共享环境变量的唯一方式是使用<code>--link</code>来连接他们。UDBN是不能以这种方式共享变量的。然而有更好的方式来共享环境变量。例如：</p>
+<ul>
+<li>多个容器使用一个Docker volume挂载一个包含共享信息的文件或目录。</li>
+<li>多个容器可以使用<code>docker-compose</code>一起启动，在compse文件中可以定义共享变量。</li>
+</ul>
+</li>
+</ul>
+<p>连接到同一个UDBN的容器跑彼此暴露所有的端口。对于需要被外部世界访问的端口必须使用<code>-p</code>或<code>--publish</code>进行公开发布。</p>
+<h4 id="管理UDBN"><a href="#管理UDBN" class="headerlink" title="管理UDBN"></a>管理UDBN</h4><p>使用<code>docker network create</code>命令创建UDBN</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker network create my-net</span><br></pre></td></tr></table></figure>
+
+<p>你可以指定子网，IP地址范围，网关和其他选项。可以通过<code>docker network create —help</code>查看<a target="_blank" rel="noopener" href="https://docs.docker.com/engine/reference/commandline/network_create/#specify-advanced-options">具体细节</a>。</p>
+<p>使用<code>docker network rm</code>命令移除UDBN。如果有容器正连接到要移除的网络，需要先断开连接。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker network <span class="built_in">rm</span> my-net</span><br></pre></td></tr></table></figure>
+
+<h4 id="连接容器到UDBN"><a href="#连接容器到UDBN" class="headerlink" title="连接容器到UDBN"></a>连接容器到UDBN</h4><p>创建新容器时可以通过一个或多个<code>--network</code>选项来指定要连接到的网络。下面这个例子连接一个Nginx容器到<code>my-net</code>网络。同时公开了容器的80端口到Docker主机的8080端口映射，这样外部的客户端可以通过主机的8080端口访问到容器的80端口。连接到<code>my-net</code>网络的其他容器可以通过<code>my-nginx</code>这个名称访问所有的端口。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker create --name my-nginx \</span><br><span class="line">--network my-net \</span><br><span class="line">--publish 8080:80 \</span><br><span class="line">nginx:latest</span><br></pre></td></tr></table></figure>
+
+<p>要连接一个正在运行的容器到已存在的UDBN，使用<code>docker network connect</code>命令。下面的命令连接已经运行的<code>my-nginx</code>容器到已存在的<code>my-net</code>网络。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker network connect my-net my-nginx</span><br></pre></td></tr></table></figure>
+
+<h4 id="断开容器和UDBN的连接"><a href="#断开容器和UDBN的连接" class="headerlink" title="断开容器和UDBN的连接"></a>断开容器和UDBN的连接</h4><p>要断开一个正在运行的容器到UDBN的链接，使用<code>docker network disconnect</code>命令。下面的将<code>my-nginx</code>容器从<code>my-net</code>网络中断开。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker network disconnect my-net my-nginx</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="followme">
+  <span>Welcome to my other publishing channels</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+        <a target="_blank" class="social-link" href="/atom.xml">
+          <span class="icon">
+            <i class="fa fa-rss"></i>
+          </span>
+
+          <span class="label">RSS</span>
+        </a>
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/docker/" rel="tag"># docker</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/05/17/%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8Docker-%E7%BB%AD/" rel="prev" title="在开发中使用Docker-续">
+                  <i class="fa fa-chevron-left"></i> 在开发中使用Docker-续
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hadix</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+<script class="next-config" data-name="chatra" type="application/json">{"enable":true,"async":true,"id":"9zyGaD8hmhm9bEGFr"}</script>
+<script src="/js/third-party/chat/chatra.js"></script>
+<script async src="https://call.chatra.io/chatra.js"></script>
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js","integrity":"sha256-7wT34TI0pEBeEFoi4z+vhuSddGh6vUTMWdqJ2SDe2jg="}}</script>
+  <script src="/js/third-party/tags/mermaid.js"></script>
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

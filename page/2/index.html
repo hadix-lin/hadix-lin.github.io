@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
 <meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.1.0">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.2.0">
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"hadix-lin.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.11.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"hadix-lin.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.12.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="hadix的知识索引">
 <meta property="og:type" content="website">
@@ -156,12 +156,12 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -214,7 +214,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Mutation/">
+    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/If-Statements/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -232,7 +232,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/04/23/Mutation/" class="post-title-link" itemprop="url">Code Smell: Mutation : 突变</a>
+          <a href="/2019/04/23/If-Statements/" class="post-title-link" itemprop="url">Code Smell : If-Statements : 条件语句</a>
         </h2>
 
         <div class="post-meta-container">
@@ -250,7 +250,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2019-05-28 14:42:53" itemprop="dateModified" datetime="2019-05-28T14:42:53+08:00">2019-05-28</time>
+      <time title="Modified: 2019-05-28 14:42:31" itemprop="dateModified" datetime="2019-05-28T14:42:31+08:00">2019-05-28</time>
     </span>
 
   
@@ -263,25 +263,30 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
-<ul>
-<li>类的字段导致对象状态是可变的</li>
-<li>方法的参数&#x2F;局部变量可以重复赋值</li>
-<li>集合容器的内容可变</li>
-</ul>
-<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
+          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p><code>if</code>可能是代码中最常用的逻辑控制语句,但不合理的复杂的<code>if</code>会让代码变得冗长复杂难以理解.</p>
+<p><code>if</code>让代码的逻辑分支成指数级上升.不合理的<code>if</code>还会带来<strong>深层嵌套</strong>问题.</p>
 <h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>对变量不只一次赋值</li>
-<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
-<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
-<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
-<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
+<li>过多的<code>if</code>语句</li>
+<li><code>if</code>语句缺少<code>else</code></li>
+<li>相同或类似的条件出现在多个<code>if</code>语句中</li>
+<li>多个<code>if</code>语句块中存在退出语句(抛异常,返回值),而且散落在代码各处</li>
+<li>多个<code>if</code>语句块中抛出了相同的异常内容.</li>
 </ul>
 <h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
-<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
-<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
-<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
+<li><p>翻转逻辑.人们更容易理解正向逻辑,所以尽可能在<code>if</code>语句中使用正向条件判断.如果一定要使用逆向逻辑条件,请将该条件封装为一个方法并提供便于理解的方法名.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//逆向条件</span></span><br><span class="line"><span class="keyword">if</span>(! exists(something))&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构为正向,上面的代码在Intellij IDEA中会有高亮提示</span></span><br><span class="line"><span class="comment">//按下Alt+Enter可以在弹出的菜单中选择&quot;invert &#x27;if&#x27; condition&quot;,即可自动重构为下面的代码</span></span><br><span class="line"><span class="keyword">if</span>(exists(something))&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果前面的代码中已经对某个条件进行了判断(例如判断某个变量是否为<code>null</code>),那么后续代码中出现的相同判断都可以移除.</p>
+</li>
+<li><p>代码中通过一系列的<code>if</code>(without else)来控制流程,那么要思考一下是否可以通过通过添加<code>else</code>来简化流程.一系列的<code>if</code>表达所有的代码都可能会被执行,而<code>if-else</code>表达的是二选一来执行.<code>if-else</code>不仅简化了代码,令逻辑更容易理解,而且还提升了代码的执行效率.</p>
+</li>
+<li><p>一旦你减少了代码中对相同条件的重复判断,就可以将这些<code>if</code>语句块提取到具有良好明明的自解释的方法中.这可以极大的改善代码的可读性.</p>
+</li>
+<li><p>一些简单的校验或检查会导致提前退出或返回的代码,请放到方法的最顶端.这样代码读者可以清楚知道哪些代码不是主要逻辑可以跳过.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(args[length] &gt;= <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="comment">// some lang code;</span></span><br><span class="line">  doSomethingWith(args[<span class="number">0</span>]);</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//上述代码可以改为</span></span><br><span class="line"><span class="keyword">if</span>(args[length] &lt; <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// some lang code;</span></span><br><span class="line">doSomeThingWith(args[<span class="number">0</span>]);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将异常语句放在最后的<code>else</code>语句中,这样读者可以明确知道,这是在所有条件判断都失败的情况下做出的处理.</p>
+</li>
 </ul>
 
       
@@ -385,6 +390,101 @@
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果方法可能返回null,那么考虑改为返回<code>Optional</code>.</p>
 <p>方法的参数通过<code>@NotNull/@Nullable</code>来告知调用者是否允许传递null值,同时为IDE的静态代码分析提供帮助.</p>
 <p>异常处理中永远不要返回null值,改为抛出具有描述信息的异常.</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Mutation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="hadix">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Konwledge Index">
+      <meta itemprop="description" content="hadix的知识索引">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | hadix' Konwledge Index">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/04/23/Mutation/" class="post-title-link" itemprop="url">Code Smell: Mutation : 突变</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-04-23 21:30:00" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2019-05-28 14:42:53" itemprop="dateModified" datetime="2019-05-28T14:42:53+08:00">2019-05-28</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
+<ul>
+<li>类的字段导致对象状态是可变的</li>
+<li>方法的参数&#x2F;局部变量可以重复赋值</li>
+<li>集合容器的内容可变</li>
+</ul>
+<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>对变量不只一次赋值</li>
+<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
+<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
+<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
+<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
+<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
+<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
+<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
+</ul>
 
       
     </div>
@@ -533,7 +633,7 @@
 <script async src="https://call.chatra.io/chatra.js"></script>
 
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdn.jsdelivr.net/npm/mermaid@8.14.0/dist/mermaid.min.js","integrity":"sha256-7wT34TI0pEBeEFoi4z+vhuSddGh6vUTMWdqJ2SDe2jg="}}</script>
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdn.jsdelivr.net/npm/mermaid@9.1.3/dist/mermaid.min.js","integrity":"sha256-TIYL00Rhw/8WaoUhYTLX9SKIEFdXxg+yMWSLVUbhiLg="}}</script>
   <script src="/js/third-party/tags/mermaid.js"></script>
 
 

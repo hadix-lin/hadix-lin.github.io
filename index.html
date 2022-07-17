@@ -244,7 +244,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2022-07-17 23:09:46 / Modified: 23:22:16" itemprop="dateCreated datePublished" datetime="2022-07-17T23:09:46+08:00">2022-07-17</time>
+      <time title="Created: 2022-07-17 23:09:46 / Modified: 23:30:33" itemprop="dateCreated datePublished" datetime="2022-07-17T23:09:46+08:00">2022-07-17</time>
     </span>
 
   
@@ -258,7 +258,7 @@
     
     <div class="post-body" itemprop="articleBody">
           <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>人类对事物的认知过程是递归的。举个例子，我们如何识别一个物体是汽车，先看到一个物体，它有底盘、车架、外壳、内饰，看到这些我们觉得这可能是汽车，也可能知识汽车的模型。再打开机盖能看到发动机、变速箱，车底能看到车轮，我们进一步识别到这是一部真实的汽车。</p>
-<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B-%E6%A8%A1%E5%9D%97%E5%8C%96%E7%9A%84%E6%B1%BD%E8%BD%A6.png"></p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B-%E6%A8%A1%E5%9D%97%E5%8C%96%E7%9A%84%E6%B1%BD%E8%BD%A6-20220717232151090.png" alt="模块化的汽车"></p>
 <p>随着我们一步步深入看到更多的汽车组成部分，我们便更确定这是一台汽车，这就是对一部汽车的递归认知过程。</p>
 <p>而对于天气，它是一个异常复杂的系统，我们很难直观的对其进行递归分析，这也是我们无法精准预测天气的原因。人类对事物的认知能力是有极限的。</p>
 <p>一辆汽车由数万个独立部件组成，很难说它不是个复杂系统，为什么我们可以很容易对它做递归分析。我们可以看到汽车是个高度模块化的系统，我们对它做递归分析的过程，实际上就是对其进行模块化拆解的过程。</p>
@@ -1453,6 +1453,106 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/If-Statements/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="hadix">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hadix' Konwledge Index">
+      <meta itemprop="description" content="hadix的知识索引">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | hadix' Konwledge Index">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/04/23/If-Statements/" class="post-title-link" itemprop="url">Code Smell : If-Statements : 条件语句</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-04-23 21:30:00" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2019-05-28 14:42:31" itemprop="dateModified" datetime="2019-05-28T14:42:31+08:00">2019-05-28</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p><code>if</code>可能是代码中最常用的逻辑控制语句,但不合理的复杂的<code>if</code>会让代码变得冗长复杂难以理解.</p>
+<p><code>if</code>让代码的逻辑分支成指数级上升.不合理的<code>if</code>还会带来<strong>深层嵌套</strong>问题.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>过多的<code>if</code>语句</li>
+<li><code>if</code>语句缺少<code>else</code></li>
+<li>相同或类似的条件出现在多个<code>if</code>语句中</li>
+<li>多个<code>if</code>语句块中存在退出语句(抛异常,返回值),而且散落在代码各处</li>
+<li>多个<code>if</code>语句块中抛出了相同的异常内容.</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li><p>翻转逻辑.人们更容易理解正向逻辑,所以尽可能在<code>if</code>语句中使用正向条件判断.如果一定要使用逆向逻辑条件,请将该条件封装为一个方法并提供便于理解的方法名.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//逆向条件</span></span><br><span class="line"><span class="keyword">if</span>(! exists(something))&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构为正向,上面的代码在Intellij IDEA中会有高亮提示</span></span><br><span class="line"><span class="comment">//按下Alt+Enter可以在弹出的菜单中选择&quot;invert &#x27;if&#x27; condition&quot;,即可自动重构为下面的代码</span></span><br><span class="line"><span class="keyword">if</span>(exists(something))&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果前面的代码中已经对某个条件进行了判断(例如判断某个变量是否为<code>null</code>),那么后续代码中出现的相同判断都可以移除.</p>
+</li>
+<li><p>代码中通过一系列的<code>if</code>(without else)来控制流程,那么要思考一下是否可以通过通过添加<code>else</code>来简化流程.一系列的<code>if</code>表达所有的代码都可能会被执行,而<code>if-else</code>表达的是二选一来执行.<code>if-else</code>不仅简化了代码,令逻辑更容易理解,而且还提升了代码的执行效率.</p>
+</li>
+<li><p>一旦你减少了代码中对相同条件的重复判断,就可以将这些<code>if</code>语句块提取到具有良好明明的自解释的方法中.这可以极大的改善代码的可读性.</p>
+</li>
+<li><p>一些简单的校验或检查会导致提前退出或返回的代码,请放到方法的最顶端.这样代码读者可以清楚知道哪些代码不是主要逻辑可以跳过.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(args[length] &gt;= <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="comment">// some lang code;</span></span><br><span class="line">  doSomethingWith(args[<span class="number">0</span>]);</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//上述代码可以改为</span></span><br><span class="line"><span class="keyword">if</span>(args[length] &lt; <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// some lang code;</span></span><br><span class="line">doSomeThingWith(args[<span class="number">0</span>]);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将异常语句放在最后的<code>else</code>语句中,这样读者可以明确知道,这是在所有条件判断都失败的情况下做出的处理.</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Iteration/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1528,96 +1628,6 @@
 <li><p>如果确实需要对数据结构进行遍历,最好将遍历代码封装的业务领域对象的方法中,然后给它起一个容易识别的名字.</p>
 </li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Multi-Responsibility-Methods/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="hadix">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="hadix' Konwledge Index">
-      <meta itemprop="description" content="hadix的知识索引">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | hadix' Konwledge Index">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/04/23/Multi-Responsibility-Methods/" class="post-title-link" itemprop="url">Code Smell: Multi-Responsibility Methods : 多职责方法</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2019-04-23 21:30:00" itemprop="dateCreated datePublished" datetime="2019-04-23T21:30:00+08:00">2019-04-23</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2019-05-28 14:42:46" itemprop="dateModified" datetime="2019-05-28T14:42:46+08:00">2019-05-28</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当我们发现一个过长的方法时,通常会想要将之拆分为几个小方法.在某些情况下这非常容易,例如:一个很长的方法有很多参数,这些参数可以明显分为两组,一组只在方法的前一半使用,另一组在后一半使用.可以很明确地知道在什么位置将长方法拆成两个小方法.</p>
-<p>有类似这种表现的方法通常都具有多重职责,逻辑十分复杂.在上面的举例中,虽然可以很明确知道在什么位置将代码拆开,但是可能前半部分会有多个返回值,需要传递给后半部分.</p>
-<p>复杂的方法不仅逻辑很难理解,也很难重构,几乎不可能重用.后续的维护多半只能是重写.</p>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>方法参数可以分组,分别在方法代码中不重合的段落中使用.例如三个用在前半部分,两个用在后半部分.</li>
-<li>Boolean类型的参数用来控制方法中某些代码块的开关.</li>
-<li>方法中的一部分只是用来计算一个值供另外一部分使用.</li>
-</ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>将明显的代码块拆分为单独的方法(例如一个检查Boolean类型参数的if语句块)</li>
-<li>如果两个构造函数没有重合的参数,且非常复杂.那么可以将这个类拆分为两个单独的类.</li>
-</ul>
-<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> ValidatedField <span class="title function_">validateQuery</span><span class="params">(Class clazz, Mapper mapper, String propertyName, FilterOperator op,</span></span><br><span class="line"><span class="params">                                    Object val, <span class="type">boolean</span> validateNames, <span class="type">boolean</span> validateTypes)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">ValidatedField</span> <span class="variable">validatedField</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ValidatedField</span>(propertyName);</span><br><span class="line">    <span class="keyword">if</span> (!propertyName.startsWith(<span class="string">&quot;$&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">final</span> String[] pathElements = propertyName.split(<span class="string">&quot;\\.&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> List&lt;String&gt; databasePathElements = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(asList(pathElements));</span><br><span class="line">        <span class="keyword">if</span> (clazz == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> validatedField;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">MappedClass</span> <span class="variable">mc</span> <span class="operator">=</span> mapper.getMappedClass(clazz);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; ; ) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">String</span> <span class="variable">fieldName</span> <span class="operator">=</span> pathElements[i];</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">fieldIsArrayOperator</span> <span class="operator">=</span> fieldName.equals(<span class="string">&quot;$&quot;</span>);</span><br><span class="line">            <span class="keyword">final</span> Optional&lt;MappedField&gt; mf = getMappedField(fieldName, mc, databasePathElements,</span><br><span class="line">                                                            i, propertyName, validateNames,</span><br><span class="line">                                                            fieldIsArrayOperator);</span><br><span class="line">            validatedField.mappedField = mf;</span><br><span class="line"></span><br><span class="line">            i++;</span><br><span class="line">            <span class="keyword">if</span> (mf.isPresent() &amp;&amp; mf.get().isMap()) &#123;</span><br><span class="line">                <span class="comment">//skip the map key validation, and move to the next fieldName</span></span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (i &gt;= pathElements.length) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!fieldIsArrayOperator) &#123;</span><br><span class="line">                <span class="comment">//catch people trying to search/update into @Reference/@Serialized fields</span></span><br><span class="line">                <span class="keyword">if</span> (validateNames &amp;&amp; !canQueryPast(mf.get())) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;Cannot use dot-notation past &#x27;%s&#x27; in &#x27;%s&#x27;; found while validating - %s&quot;</span>,</span><br><span class="line">                             fieldName, mc.getClazz().getName(), propertyName));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!mf.isPresent() &amp;&amp; mc.isInterface()) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!mf.isPresent()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;The field &#x27;%s&#x27; could not be found in &#x27;%s&#x27;&quot;</span>, propertyName, </span><br><span class="line">                             mc.getClazz().getName()));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//get the next MappedClass for the next field validation</span></span><br><span class="line">                <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> mf.get();</span><br><span class="line">                mc = mapper.getMappedClass((mappedField.isSingleValue()) </span><br><span class="line">                                           ? mappedField.getType() </span><br><span class="line">                                           : mappedField.getSubClass());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//record new property string</span></span><br><span class="line">        validatedField.databasePath = databasePathElements.stream().collect(joining(<span class="string">&quot;.&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (validateTypes &amp;&amp; validatedField.mappedField.isPresent()) &#123;</span><br><span class="line">            <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> validatedField.mappedField.get();</span><br><span class="line">            List&lt;ValidationFailure&gt; typeValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForType</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getType(), op, val, typeValidationFailures);</span><br><span class="line">            List&lt;ValidationFailure&gt; subclassValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForSubclass</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getSubClass(), op, val, subclassValidationFailures);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ((mappedField.isSingleValue() &amp;&amp; !compatibleForType)</span><br><span class="line">                 || mappedField.isMultipleValues() &amp;&amp; !(compatibleForSubclass || compatibleForType)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (LOG.isWarningEnabled()) &#123;</span><br><span class="line">                    LOG.warning(</span><br><span class="line">                      format(<span class="string">&quot;The type(s) for the query/update may be inconsistent; &quot;</span></span><br><span class="line">                             +<span class="string">&quot;using an instance of type &#x27;%s&#x27; for the field &#x27;%s.%s&#x27;&quot;</span></span><br><span class="line">                             +<span class="string">&quot; which is declared as &#x27;%s&#x27;&quot;</span>,</span><br><span class="line">                             val.getClass().getName(), mappedField.getDeclaringClass().getName(),</span><br><span class="line">                             mappedField.getJavaFieldName(), mappedField.getType().getName()));</span><br><span class="line">                    typeValidationFailures.addAll(subclassValidationFailures);</span><br><span class="line">                    LOG.warning(<span class="string">&quot;Validation warnings: \n&quot;</span> + typeValidationFailures);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> validatedField;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>第一步,观察11-48行,这段代码计算了<code>MapperClass mc</code>的值供后面的代码使用,可以拆解出来.</p>
 
       
     </div>

@@ -30,6 +30,39 @@
       </tags>
   </entry>
   <entry>
+    <title>Code Smell : If-Statements : 条件语句</title>
+    <url>/2019/04/23/If-Statements/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p><code>if</code>可能是代码中最常用的逻辑控制语句,但不合理的复杂的<code>if</code>会让代码变得冗长复杂难以理解.</p>
+<p><code>if</code>让代码的逻辑分支成指数级上升.不合理的<code>if</code>还会带来<strong>深层嵌套</strong>问题.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>过多的<code>if</code>语句</li>
+<li><code>if</code>语句缺少<code>else</code></li>
+<li>相同或类似的条件出现在多个<code>if</code>语句中</li>
+<li>多个<code>if</code>语句块中存在退出语句(抛异常,返回值),而且散落在代码各处</li>
+<li>多个<code>if</code>语句块中抛出了相同的异常内容.</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li><p>翻转逻辑.人们更容易理解正向逻辑,所以尽可能在<code>if</code>语句中使用正向条件判断.如果一定要使用逆向逻辑条件,请将该条件封装为一个方法并提供便于理解的方法名.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//逆向条件</span></span><br><span class="line"><span class="keyword">if</span>(! exists(something))&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构为正向,上面的代码在Intellij IDEA中会有高亮提示</span></span><br><span class="line"><span class="comment">//按下Alt+Enter可以在弹出的菜单中选择&quot;invert &#x27;if&#x27; condition&quot;,即可自动重构为下面的代码</span></span><br><span class="line"><span class="keyword">if</span>(exists(something))&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果前面的代码中已经对某个条件进行了判断(例如判断某个变量是否为<code>null</code>),那么后续代码中出现的相同判断都可以移除.</p>
+</li>
+<li><p>代码中通过一系列的<code>if</code>(without else)来控制流程,那么要思考一下是否可以通过通过添加<code>else</code>来简化流程.一系列的<code>if</code>表达所有的代码都可能会被执行,而<code>if-else</code>表达的是二选一来执行.<code>if-else</code>不仅简化了代码,令逻辑更容易理解,而且还提升了代码的执行效率.</p>
+</li>
+<li><p>一旦你减少了代码中对相同条件的重复判断,就可以将这些<code>if</code>语句块提取到具有良好明明的自解释的方法中.这可以极大的改善代码的可读性.</p>
+</li>
+<li><p>一些简单的校验或检查会导致提前退出或返回的代码,请放到方法的最顶端.这样代码读者可以清楚知道哪些代码不是主要逻辑可以跳过.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(args[length] &gt;= <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="comment">// some lang code;</span></span><br><span class="line">  doSomethingWith(args[<span class="number">0</span>]);</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//上述代码可以改为</span></span><br><span class="line"><span class="keyword">if</span>(args[length] &lt; <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// some lang code;</span></span><br><span class="line">doSomeThingWith(args[<span class="number">0</span>]);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将异常语句放在最后的<code>else</code>语句中,这样读者可以明确知道,这是在所有条件判断都失败的情况下做出的处理.</p>
+</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Code Smell : Iteration : 迭代</title>
     <url>/2019/04/23/Iteration/</url>
     <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当你看到通过for循环或者streams-api遍历集合的代码时,需要明确知道迭代遍历是必须的(意味着对集合中的每个元素都进行了必要的逻辑处理).如果遍历一个数据结构总是为了从中查找某个值,那么最好将集合转换为Set或Map.这样做不仅可以令代码更简洁已读,而且还能提供更好的性能.</p>
@@ -87,32 +120,27 @@
       </tags>
   </entry>
   <entry>
-    <title>Code Smell : If-Statements : 条件语句</title>
-    <url>/2019/04/23/If-Statements/</url>
-    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p><code>if</code>可能是代码中最常用的逻辑控制语句,但不合理的复杂的<code>if</code>会让代码变得冗长复杂难以理解.</p>
-<p><code>if</code>让代码的逻辑分支成指数级上升.不合理的<code>if</code>还会带来<strong>深层嵌套</strong>问题.</p>
+    <title>Code Smell: Mutation : 突变</title>
+    <url>/2019/04/23/Mutation/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
+<ul>
+<li>类的字段导致对象状态是可变的</li>
+<li>方法的参数&#x2F;局部变量可以重复赋值</li>
+<li>集合容器的内容可变</li>
+</ul>
+<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
 <h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>过多的<code>if</code>语句</li>
-<li><code>if</code>语句缺少<code>else</code></li>
-<li>相同或类似的条件出现在多个<code>if</code>语句中</li>
-<li>多个<code>if</code>语句块中存在退出语句(抛异常,返回值),而且散落在代码各处</li>
-<li>多个<code>if</code>语句块中抛出了相同的异常内容.</li>
+<li>对变量不只一次赋值</li>
+<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
+<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
+<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
+<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
 </ul>
 <h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li><p>翻转逻辑.人们更容易理解正向逻辑,所以尽可能在<code>if</code>语句中使用正向条件判断.如果一定要使用逆向逻辑条件,请将该条件封装为一个方法并提供便于理解的方法名.</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//逆向条件</span></span><br><span class="line"><span class="keyword">if</span>(! exists(something))&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构为正向,上面的代码在Intellij IDEA中会有高亮提示</span></span><br><span class="line"><span class="comment">//按下Alt+Enter可以在弹出的菜单中选择&quot;invert &#x27;if&#x27; condition&quot;,即可自动重构为下面的代码</span></span><br><span class="line"><span class="keyword">if</span>(exists(something))&#123;</span><br><span class="line">  doSomeThingB();</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  doSomeThingA();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>如果前面的代码中已经对某个条件进行了判断(例如判断某个变量是否为<code>null</code>),那么后续代码中出现的相同判断都可以移除.</p>
-</li>
-<li><p>代码中通过一系列的<code>if</code>(without else)来控制流程,那么要思考一下是否可以通过通过添加<code>else</code>来简化流程.一系列的<code>if</code>表达所有的代码都可能会被执行,而<code>if-else</code>表达的是二选一来执行.<code>if-else</code>不仅简化了代码,令逻辑更容易理解,而且还提升了代码的执行效率.</p>
-</li>
-<li><p>一旦你减少了代码中对相同条件的重复判断,就可以将这些<code>if</code>语句块提取到具有良好明明的自解释的方法中.这可以极大的改善代码的可读性.</p>
-</li>
-<li><p>一些简单的校验或检查会导致提前退出或返回的代码,请放到方法的最顶端.这样代码读者可以清楚知道哪些代码不是主要逻辑可以跳过.</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(args[length] &gt;= <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="comment">// some lang code;</span></span><br><span class="line">  doSomethingWith(args[<span class="number">0</span>]);</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//上述代码可以改为</span></span><br><span class="line"><span class="keyword">if</span>(args[length] &lt; <span class="number">1</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// some lang code;</span></span><br><span class="line">doSomeThingWith(args[<span class="number">0</span>]);</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>将异常语句放在最后的<code>else</code>语句中,这样读者可以明确知道,这是在所有条件判断都失败的情况下做出的处理.</p>
-</li>
+<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
+<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
+<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
+<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
 </ul>
 ]]></content>
       <tags>
@@ -155,31 +183,157 @@
       </tags>
   </entry>
   <entry>
-    <title>Code Smell: Mutation : 突变</title>
-    <url>/2019/04/23/Mutation/</url>
-    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
-<ul>
-<li>类的字段导致对象状态是可变的</li>
-<li>方法的参数&#x2F;局部变量可以重复赋值</li>
-<li>集合容器的内容可变</li>
-</ul>
-<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
+    <title>Code Smell : Too Many Problems : 太多的问题</title>
+    <url>/2019/04/23/Too-Many-Problems/</url>
+    <content><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
+<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
+<ol>
+<li>将方法拆分多个相对更短的代码段</li>
+<li>针对每个方法处理异味,但一次仅针对一种异味</li>
+<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
+</ol>
 <h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>对变量不只一次赋值</li>
-<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
-<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
-<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
-<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
+<li>非常长或复杂的方法或类.</li>
+<li>当你大概流量代码时能够发现多种异味.</li>
+<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
 </ul>
 <h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
-<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
-<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
-<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
+<li>将代码拆分为多个段落</li>
+<li>一次仅尝试修复一种异味</li>
+<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
+<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
 </ul>
 ]]></content>
       <tags>
         <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>发布构件到maven中央仓</title>
+    <url>/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/</url>
+    <content><![CDATA[<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布<a href="https://github.com/hadix-lin/springfox-plus">springfox-plus</a>项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考.</p>
+<p>可能您使用过公司的maven仓库,按照公司的流程,可以很容通过<code>maven deploy</code>将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将构件发布到授信的第三方仓库,经过审核后才能同步到中央仓库.</p>
+<p>本文选择的第三方仓库是<a href="https://central.sonatype.org/">sonatype</a>.它也是中央仓库的管理者.英文好的朋友可以自行到它的网站上去看详尽的<a href="https://central.sonatype.org/pages/producers.html">发布说明</a>.本文涵盖的内容除了基本的发布方法外,还包含我遇到的麻烦的解决方法.所以依然对您有参考价值.</p>
+<h2 id="STEP1-注册Sonatype的JIRA帐户并发布ISSUE"><a href="#STEP1-注册Sonatype的JIRA帐户并发布ISSUE" class="headerlink" title="STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE"></a>STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</h2><ol>
+<li><p>到<a href="https://issues.sonatype.org/secure/Signup!default.jspa">sonatype的页面</a>注册一个账号.一个常规的简单表单,将邮箱,用户名,密码按要求填好即可.</p>
+<p>注册成功后,使用该账号进行登陆.可以看到如下的界面</p>
+<p><img src="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png" alt="image-20190423002605866"></p>
+</li>
+<li><p>按照上图说明,点击按钮后会弹出创建ISSUE的界面</p>
+</li>
+</ol>
+<p>  <img src="https://i.loli.net/2019/05/15/5cdaf170e63a672418.png" alt="image-20190423003718569"> </p>
+<p>  这个图里面的字段都是必填的,实际的界面还会多一些选填的内容.</p>
+<ul>
+<li>Summary : 项目的简介(一句话描述)</li>
+<li>Group Id : 这个比较有讲究,必须是你管理的域名的倒置,例如我的Github Pages域名<code>hadix-lin.github.io</code>,那么我的GroupId为<code>io.github.hadix-lin</code></li>
+<li>Project URL : 项目的主页地址,github可以直接填你的项目地址,例如:<a href="https://github.com/hadix-lin/springfox-plus">https://github.com/hadix-lin/springfox-plus</a></li>
+<li>SCM url : 源码控制系统地址,例如:<a href="https://github.com/hadix-lin/springfox-plus.git">https://github.com/hadix-lin/springfox-plus.git</a></li>
+<li>Project : 按图选择即可(社区支持的开源项目)</li>
+<li>Issue Type : 按图选择即可(新项目)</li>
+<li>Already Synced to Central : 您的项目是否已经通过其他方式同步到中央仓库了.选择<code>No</code>.</li>
+</ul>
+<p>  界面上的其他选填内容,按需填写即可.</p>
+<p>  ISSUE创建成功后进入如下图页面</p>
+<p>  <img src="https://i.loli.net/2019/05/15/5cdaf17248c0b82591.png" alt="image-20190424225424590"></p>
+<p>  主要关注评论部分,如果之前表单填写的内容不规范,会在评论区里收到反馈,按要求编辑修改ISSUE即可.例如途中第一条评论告知我填写的groupId不和规范,并给了我建议的写法.</p>
+<p>  ISSUE正确后,过一段时间会收到类似图中的第二条评论,告知您现在可以向仓库提交构件了.</p>
+<h2 id="SETP2-配置您的POM-令您的项目满足先决条件"><a href="#SETP2-配置您的POM-令您的项目满足先决条件" class="headerlink" title="SETP2 : 配置您的POM,令您的项目满足先决条件"></a>SETP2 : 配置您的POM,令您的项目满足先决条件</h2><h3 id="先决条件"><a href="#先决条件" class="headerlink" title="先决条件"></a>先决条件</h3><p>您的开源项目必须符合以下条件才能允许被发布:</p>
+<ol>
+<li><p>提供javadoc和源代码包</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7-sources.jar</span><br><span class="line">example-application-1.4.7-javadoc.jar</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>所有发布的文件必须使用GPG签名</p>
+<p>所有的文件使用GPG签名后,将签名内容存放在<code>.asc</code>文件中,例如:您的项目包含如下文件:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7.pom</span><br><span class="line">example-application-1.4.7.jar</span><br><span class="line">example-application-1.4.7-sources.jar</span><br><span class="line">example-application-1.4.7-javadoc.jar</span><br></pre></td></tr></table></figure>
+
+<p>那么得到的签名文件如下:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7.pom.asc</span><br><span class="line">example-application-1.4.7.jar.asc</span><br><span class="line">example-application-1.4.7-sources.jar.asc</span><br><span class="line">example-application-1.4.7-javadoc.jar.asc</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>POM文件中要包含足够的元数据</p>
+<ul>
+<li>正确的坐标GAV(<code>&lt;groupId&gt;,&lt;artifactId&gt;,&lt;version&gt;</code>)</li>
+<li>项目名称<code>&lt;name&gt;</code>, 描述<code>&lt;description&gt;</code> 和项目主页地址<code>&lt;url&gt;</code></li>
+<li>许可证信息<code>&lt;licenses&gt;</code></li>
+<li>开发者信息<code>&lt;developers&gt;</code></li>
+<li>源码控制系统(SCM)信息<code>&lt;scm&gt;</code></li>
+</ul>
+</li>
+</ol>
+<p>文章最后会提供我的<a href="https://github.com/hadix-lin/springfox-plus">springfox-plus</a>的pom文件供参考.</p>
+<h3 id="为满足上述条件-编写如下的pom文件"><a href="#为满足上述条件-编写如下的pom文件" class="headerlink" title="为满足上述条件,编写如下的pom文件"></a>为满足上述条件,编写如下的pom文件</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.hadix-lin<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-plus-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>springfox-plus<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>An extension of SpringFox that supports read javadoc as API document<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://github.com/hadix-lin/springfox-plus<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 项目使用的许可证 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">licenses</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">license</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>The Apache Software License, Version 2.0<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://www.apache.org/licenses/LICENSE-2.0.txt<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">license</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">licenses</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 开发者 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">developers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">developer</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadix<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">email</span>&gt;</span>hadix.lin@gmail.com<span class="tag">&lt;/<span class="name">email</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">developer</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">developers</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 源码控制管理系统 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">scm</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">connection</span>&gt;</span>scm:git@github.com:hadix-lin/springfox-plus.git<span class="tag">&lt;/<span class="name">connection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">developerConnection</span>&gt;</span>scm:git@github.com:hadix-lin/springfox-plus.git<span class="tag">&lt;/<span class="name">developerConnection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://github.com/hadix-lin/springfox-plus<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">scm</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 项目的依赖 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependencies</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 这里使用一个profile来管理发布时的构建插件 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">profiles</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>release<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 打源码包 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-source-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>jar-no-fork<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 打javadoc包 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-javadoc-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">show</span>&gt;</span>private<span class="tag">&lt;/<span class="name">show</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">nohelp</span>&gt;</span>true<span class="tag">&lt;/<span class="name">nohelp</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">charset</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">charset</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">encoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">encoding</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">docencoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">docencoding</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 对构件进行GPG签名 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-gpg-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>verify<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>sign<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            nexus-staging 这个插件用于在最后执行一些仓库操作</span></span><br><span class="line"><span class="comment">            这些操作也可以手动在sonatype的仓库上进行,但是相对繁琐,推荐使用插件.</span></span><br><span class="line"><span class="comment">            手动操作不在本文进行描述,可以自行查阅[文档](https://central.sonatype.org/pages/releasing-the-deployment.html)</span></span><br><span class="line"><span class="comment">           --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.sonatype.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>nexus-staging-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6.8<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">extensions</span>&gt;</span>true<span class="tag">&lt;/<span class="name">extensions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">serverId</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">serverId</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">nexusUrl</span>&gt;</span>https://oss.sonatype.org/<span class="tag">&lt;/<span class="name">nexusUrl</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">autoReleaseAfterClose</span>&gt;</span>true<span class="tag">&lt;/<span class="name">autoReleaseAfterClose</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- 配置发布的仓库 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://oss.sonatype.org/content/repositories/snapshots/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://oss.sonatype.org/service/local/staging/deploy/maven2/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">profiles</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上面的pom文件是从我的项目中截取的,全文可以看<a href="https://github.com/hadix-lin/springfox-plus/blob/master/pom.xml">这里</a></p>
+<p>另外还要在您的全局maven配置中添加如下内容</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servers</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 这个id要跟上面pom中配置的repository的id一致 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 用户名/密码就是您在上面注册得到的 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>用户名<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>密码<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servers</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="准备GPG签名密钥"><a href="#准备GPG签名密钥" class="headerlink" title="准备GPG签名密钥"></a>准备GPG签名密钥</h3><p>上文中配置的maven-gpg-plugin需要本机配置好GPG密钥,GPG是一种非对称加密算法,密钥要公钥私钥,公钥需要上传到公钥服务器上,私钥安装在本地.</p>
+<p>在macOS下通过brew安装gpg命令,然后生成密钥:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">brew install gpg</span><br><span class="line"><span class="comment"># 检查是否安装成功</span></span><br><span class="line">gpg --version </span><br><span class="line"><span class="comment"># 生成密钥</span></span><br><span class="line">gpg --gen-key</span><br><span class="line"><span class="comment"># 之后会在命令行中以交互模式让你填写姓名,邮箱等等信息,最后输入两次用于保护密钥的密码</span></span><br><span class="line"><span class="comment"># 然后使用如下命令查看生成的密钥</span></span><br><span class="line">gpg --list-keys</span><br><span class="line"><span class="comment"># 如下输出</span></span><br><span class="line"><span class="comment"># /Users/hadix/.gnupg/pubring.kbx -&gt; 密钥文件,内含私钥</span></span><br><span class="line"><span class="comment"># -------------------------------</span></span><br><span class="line"><span class="comment"># pub   rsa2048 2019-04-21 [SC] [expires: 2021-04-20]</span></span><br><span class="line"><span class="comment">#       58FD688CA40BE2002C1B68C848492F673D89A858 --&gt;公钥</span></span><br><span class="line"><span class="comment"># uid           [ultimate] hadix &lt;hadix.lin@gamil.com&gt;</span></span><br><span class="line"><span class="comment"># sub   rsa2048 2019-04-21 [E] [expires: 2021-04-20]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后将公钥发布到密钥服务器</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net --send-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 如果发布失败请尝试如下命令</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net:80 --send-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 检查是否发布成功</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 如果失败请尝试如下命令</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys &lt;您的公钥&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="STEP3-发布到sonatype仓库"><a href="#STEP3-发布到sonatype仓库" class="headerlink" title="STEP3 : 发布到sonatype仓库"></a>STEP3 : 发布到sonatype仓库</h2><p>上面已经配置好了maven的pom文件,可以直接使用如下命令进行发布</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mvn clean deploy -P release</span><br><span class="line"><span class="comment"># 如果构件过程中无法正确生成gpg签名,出现类似&quot;Exit Code 2&quot;的错误,那么请执行如下命令</span></span><br><span class="line"><span class="built_in">export</span> GPG_TTY=$(<span class="built_in">tty</span>)</span><br><span class="line">mvn clean deploy -P release</span><br><span class="line"><span class="comment"># 执行成功后 由于我们在上面的pom文件中配置了&lt;autoReleaseAfterClose&gt;true&lt;/autoReleaseAfterClose&gt;</span></span><br><span class="line"><span class="comment"># maven构件过程会自动进行release构件上架</span></span><br></pre></td></tr></table></figure>
+
+<p>如果您的项目版本号是以<code>-SNAPSHOT</code>结尾,那么构件将发布到snapshot仓库,不会同步到中央仓库.</p>
+<p>如果您的项目构建不满足上文中的先决条件,那么上述命令会返回类似如下的输出</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[ERROR] Rule failure <span class="keyword">while</span> trying to close staging repository with ID <span class="string">&quot;iogithubhadix-lin-1002&quot;</span>.</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Nexus Staging Rules Failure Report</span><br><span class="line">[ERROR] ==================================</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Repository <span class="string">&quot;iogithubhadix-lin-1002&quot;</span> failures</span><br><span class="line">[ERROR]   Rule <span class="string">&quot;pom-staging&quot;</span> failures</span><br><span class="line">[ERROR]     * Invalid POM: /io/github/hadix-lin/http/1.0/http-1.0.pom: Project name missing, Project description missing, Project URL missing</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Cleaning up <span class="built_in">local</span> stage directory after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Deleting context ac894b84a446a7.properties</span><br><span class="line">[ERROR] Cleaning up remote stage repositories after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Dropping failed staging repository with ID <span class="string">&quot;iogithubhadix-lin-1002&quot;</span> (Rule failure during close of staging repositories: [iogithubhadix-lin-1002]).</span><br></pre></td></tr></table></figure>
+
+<p>按提示修改项目的pom文件即可.例如上面这段错误信息提示我的项目没有<code>Project name</code>.在pom中增加<code>&lt;name&gt;http&lt;/name&gt;</code>即可.</p>
+<h2 id="STEP4-回复ISSUE来发起同步"><a href="#STEP4-回复ISSUE来发起同步" class="headerlink" title="STEP4 : 回复ISSUE来发起同步"></a>STEP4 : 回复ISSUE来发起同步</h2><p>首次发布构件的时候,是不会自动同步到中央仓库的.当上面的步骤全部执行成功后,需要找到最初创建的ISSUE页面.在评论区用英文写一条评论,比如”the first release version(0.0.1) uploaded via maven”.然后耐心等待,会收到回复.像下面图中的样子.</p>
+<p><img src="https://i.loli.net/2019/05/15/5cdaf1737f70f93934.png" alt="image-20190427204606484"></p>
+<p>以后只要是同一个groupId的构件发布就不需要再来回复了.发布后过差不多两个小时就会自动同步到中央仓库.</p>
+<p>如果要发不不同groupId的构件,那么请重复STEP1中创建ISSUE的操作.</p>
+]]></content>
+      <tags>
+        <tag>tutorial</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>模块化工程</title>
+    <url>/2022/07/17/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B/</url>
+    <content><![CDATA[<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>人类对事物的认知过程是递归的。举个例子，我们如何识别一个物体是汽车，先看到一个物体，它有底盘、车架、外壳、内饰，看到这些我们觉得这可能是汽车，也可能知识汽车的模型。再打开机盖能看到发动机、变速箱，车底能看到车轮，我们进一步识别到这是一部真实的汽车。</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B-%E6%A8%A1%E5%9D%97%E5%8C%96%E7%9A%84%E6%B1%BD%E8%BD%A6-20220717232151090.png" alt="模块化的汽车"></p>
+<p>随着我们一步步深入看到更多的汽车组成部分，我们便更确定这是一台汽车，这就是对一部汽车的递归认知过程。</p>
+<p>而对于天气，它是一个异常复杂的系统，我们很难直观的对其进行递归分析，这也是我们无法精准预测天气的原因。人类对事物的认知能力是有极限的。</p>
+<p>一辆汽车由数万个独立部件组成，很难说它不是个复杂系统，为什么我们可以很容易对它做递归分析。我们可以看到汽车是个高度模块化的系统，我们对它做递归分析的过程，实际上就是对其进行模块化拆解的过程。</p>
+<p>直接分析复杂系统很困难，但只要它能够拆解为独立的更小的模块，我们总能够将之拆解到一个简单系统层次，然后再去分析识别，最终实现对这个复杂系统的<strong>完全认知</strong>。</p>
+<blockquote>
+<p>一个系统越容易进行递归分析，我们越容易理解它，进一步，也越容易改造它。对于汽车如此，对于软件系统亦如是。</p>
+<p>软件工程的一个重要目标就是要令开发的软件系统更易扩展和维护，通过模块化方式构建一个系统，会令该系统易于理解，也就更容易实现这一目标。</p>
+</blockquote>
+<h2 id="额外的好处"><a href="#额外的好处" class="headerlink" title="额外的好处"></a>额外的好处</h2><p>除了另系统更容易被递归分析外，还具有以下好处：</p>
+<ol>
+<li>可重用：具备抽象良好接口的模块，可以很容易被重用，特别是基础组件。业务系统研发过程中，通过不断优化模块最终沉淀到最下层的模块通常与具体具体的业务语意无关了，自然而然就变成了可被重用的公共组件。</li>
+<li>可以灵活部署：不同的模块可以打包在一起部署，也可以利用SOA工具分布式部署。</li>
+<li>富有弹性：模块可以独立进行资源伸缩，提升整个系统的弹性。例如：汽车动力不足，可以加装一个发动机，实现四驱（这也是现在大部分电动车的四驱方案）。可以提供备胎，替换破损的轮胎。</li>
+</ol>
+<h2 id="模块化的障碍"><a href="#模块化的障碍" class="headerlink" title="模块化的障碍"></a>模块化的障碍</h2><ol>
+<li><p>循环依赖：</p>
+<p>如果两个模块间有循环依赖，那么当我们通过递归分析时将陷入无限递归，永远得不到结果。两个模块如果有循环依赖，那么他们是无法拆分的，实际上他们只能作为一个模块来使用。</p>
+</li>
+<li><p>封闭性不足：</p>
+<p>如果一个模块不仅开放有限的接口，那么它将可能被其他模块随意依赖，其自身难以被修改，因为它被迫与其他模块进行深度绑定，最终仅能作为其他模块的一部分存在。</p>
+<p>例如：如果车轮直接依赖变速箱齿轮进行传动，那么我们只能将变速箱和车轮安装在一起，可以想象这种结构是非常难加装转向装置的。</p>
+<blockquote>
+<p>实际上模块应当遵循所有SOLID原则。</p>
+<p>S：Single responsibility&#x2F;单一权责</p>
+<p>O：Open&#x2F;Closed&#x2F;开放封闭</p>
+<p>L：Liskov Substitution&#x2F;替换原则</p>
+<p>I：interface-segregation&#x2F;接口隔离</p>
+<p>D：Dependency inversion&#x2F;依赖反转</p>
+</blockquote>
+</li>
+<li><p>无法自我管理：</p>
+<p>如果一个模块无法管理自身的组件及其数据，那么它将不得不与能够管理这些的模块集成在一起。也就是说它必须与管理这些内容的组件集成在一起。</p>
+<p>例如：如果汽车内燃气燃烧室的大小必须由底盘决定，那么我们永远无法制造出可以安装在任意车辆中的发东西。</p>
+<blockquote>
+<p>模块提供的能力特性，必须由自身定义，而不取决于外部环境</p>
+</blockquote>
+</li>
+</ol>
+]]></content>
+      <tags>
+        <tag>架构</tag>
       </tags>
   </entry>
   <entry>
@@ -357,112 +511,6 @@
 ]]></content>
       <tags>
         <tag>docker</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Code Smell : Too Many Problems : 太多的问题</title>
-    <url>/2019/04/23/Too-Many-Problems/</url>
-    <content><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
-<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
-<ol>
-<li>将方法拆分多个相对更短的代码段</li>
-<li>针对每个方法处理异味,但一次仅针对一种异味</li>
-<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
-</ol>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>非常长或复杂的方法或类.</li>
-<li>当你大概流量代码时能够发现多种异味.</li>
-<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
-</ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>将代码拆分为多个段落</li>
-<li>一次仅尝试修复一种异味</li>
-<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
-<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
-</ul>
-]]></content>
-      <tags>
-        <tag>coding</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>发布构件到maven中央仓</title>
-    <url>/2019/04/27/%E5%8F%91%E5%B8%83%E6%9E%84%E4%BB%B6%E5%88%B0maven%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/</url>
-    <content><![CDATA[<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>如果您有一个开源项目,为了让更多人轻松获取使用,那么发布到maven中央仓库是必然选择.本文是我自己发布<a href="https://github.com/hadix-lin/springfox-plus">springfox-plus</a>项目的记录.包含整个过程中我遇到的麻烦.希望可以给其他有同样需求的朋友提供一些参考.</p>
-<p>可能您使用过公司的maven仓库,按照公司的流程,可以很容通过<code>maven deploy</code>将自己的构件发布到仓库中,公司的同事就可以用了.但是中央仓库是不能够直接发布的,必须通过先将构件发布到授信的第三方仓库,经过审核后才能同步到中央仓库.</p>
-<p>本文选择的第三方仓库是<a href="https://central.sonatype.org/">sonatype</a>.它也是中央仓库的管理者.英文好的朋友可以自行到它的网站上去看详尽的<a href="https://central.sonatype.org/pages/producers.html">发布说明</a>.本文涵盖的内容除了基本的发布方法外,还包含我遇到的麻烦的解决方法.所以依然对您有参考价值.</p>
-<h2 id="STEP1-注册Sonatype的JIRA帐户并发布ISSUE"><a href="#STEP1-注册Sonatype的JIRA帐户并发布ISSUE" class="headerlink" title="STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE"></a>STEP1 : 注册Sonatype的JIRA帐户并发布ISSUE</h2><ol>
-<li><p>到<a href="https://issues.sonatype.org/secure/Signup!default.jspa">sonatype的页面</a>注册一个账号.一个常规的简单表单,将邮箱,用户名,密码按要求填好即可.</p>
-<p>注册成功后,使用该账号进行登陆.可以看到如下的界面</p>
-<p><img src="https://i.loli.net/2019/05/15/5cdaf16ee833a57832.png" alt="image-20190423002605866"></p>
-</li>
-<li><p>按照上图说明,点击按钮后会弹出创建ISSUE的界面</p>
-</li>
-</ol>
-<p>  <img src="https://i.loli.net/2019/05/15/5cdaf170e63a672418.png" alt="image-20190423003718569"> </p>
-<p>  这个图里面的字段都是必填的,实际的界面还会多一些选填的内容.</p>
-<ul>
-<li>Summary : 项目的简介(一句话描述)</li>
-<li>Group Id : 这个比较有讲究,必须是你管理的域名的倒置,例如我的Github Pages域名<code>hadix-lin.github.io</code>,那么我的GroupId为<code>io.github.hadix-lin</code></li>
-<li>Project URL : 项目的主页地址,github可以直接填你的项目地址,例如:<a href="https://github.com/hadix-lin/springfox-plus">https://github.com/hadix-lin/springfox-plus</a></li>
-<li>SCM url : 源码控制系统地址,例如:<a href="https://github.com/hadix-lin/springfox-plus.git">https://github.com/hadix-lin/springfox-plus.git</a></li>
-<li>Project : 按图选择即可(社区支持的开源项目)</li>
-<li>Issue Type : 按图选择即可(新项目)</li>
-<li>Already Synced to Central : 您的项目是否已经通过其他方式同步到中央仓库了.选择<code>No</code>.</li>
-</ul>
-<p>  界面上的其他选填内容,按需填写即可.</p>
-<p>  ISSUE创建成功后进入如下图页面</p>
-<p>  <img src="https://i.loli.net/2019/05/15/5cdaf17248c0b82591.png" alt="image-20190424225424590"></p>
-<p>  主要关注评论部分,如果之前表单填写的内容不规范,会在评论区里收到反馈,按要求编辑修改ISSUE即可.例如途中第一条评论告知我填写的groupId不和规范,并给了我建议的写法.</p>
-<p>  ISSUE正确后,过一段时间会收到类似图中的第二条评论,告知您现在可以向仓库提交构件了.</p>
-<h2 id="SETP2-配置您的POM-令您的项目满足先决条件"><a href="#SETP2-配置您的POM-令您的项目满足先决条件" class="headerlink" title="SETP2 : 配置您的POM,令您的项目满足先决条件"></a>SETP2 : 配置您的POM,令您的项目满足先决条件</h2><h3 id="先决条件"><a href="#先决条件" class="headerlink" title="先决条件"></a>先决条件</h3><p>您的开源项目必须符合以下条件才能允许被发布:</p>
-<ol>
-<li><p>提供javadoc和源代码包</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7-sources.jar</span><br><span class="line">example-application-1.4.7-javadoc.jar</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>所有发布的文件必须使用GPG签名</p>
-<p>所有的文件使用GPG签名后,将签名内容存放在<code>.asc</code>文件中,例如:您的项目包含如下文件:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7.pom</span><br><span class="line">example-application-1.4.7.jar</span><br><span class="line">example-application-1.4.7-sources.jar</span><br><span class="line">example-application-1.4.7-javadoc.jar</span><br></pre></td></tr></table></figure>
-
-<p>那么得到的签名文件如下:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">example-application-1.4.7.pom.asc</span><br><span class="line">example-application-1.4.7.jar.asc</span><br><span class="line">example-application-1.4.7-sources.jar.asc</span><br><span class="line">example-application-1.4.7-javadoc.jar.asc</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>POM文件中要包含足够的元数据</p>
-<ul>
-<li>正确的坐标GAV(<code>&lt;groupId&gt;,&lt;artifactId&gt;,&lt;version&gt;</code>)</li>
-<li>项目名称<code>&lt;name&gt;</code>, 描述<code>&lt;description&gt;</code> 和项目主页地址<code>&lt;url&gt;</code></li>
-<li>许可证信息<code>&lt;licenses&gt;</code></li>
-<li>开发者信息<code>&lt;developers&gt;</code></li>
-<li>源码控制系统(SCM)信息<code>&lt;scm&gt;</code></li>
-</ul>
-</li>
-</ol>
-<p>文章最后会提供我的<a href="https://github.com/hadix-lin/springfox-plus">springfox-plus</a>的pom文件供参考.</p>
-<h3 id="为满足上述条件-编写如下的pom文件"><a href="#为满足上述条件-编写如下的pom文件" class="headerlink" title="为满足上述条件,编写如下的pom文件"></a>为满足上述条件,编写如下的pom文件</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.hadix-lin<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-plus-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>springfox-plus<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>An extension of SpringFox that supports read javadoc as API document<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://github.com/hadix-lin/springfox-plus<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 项目使用的许可证 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">licenses</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">license</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>The Apache Software License, Version 2.0<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://www.apache.org/licenses/LICENSE-2.0.txt<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">license</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">licenses</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 开发者 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">developers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">developer</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadix<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">email</span>&gt;</span>hadix.lin@gmail.com<span class="tag">&lt;/<span class="name">email</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">developer</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">developers</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 源码控制管理系统 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">scm</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">connection</span>&gt;</span>scm:git@github.com:hadix-lin/springfox-plus.git<span class="tag">&lt;/<span class="name">connection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">developerConnection</span>&gt;</span>scm:git@github.com:hadix-lin/springfox-plus.git<span class="tag">&lt;/<span class="name">developerConnection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://github.com/hadix-lin/springfox-plus<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">scm</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 项目的依赖 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependencies</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 这里使用一个profile来管理发布时的构建插件 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">profiles</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>release<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 打源码包 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-source-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>jar-no-fork<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 打javadoc包 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-javadoc-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">show</span>&gt;</span>private<span class="tag">&lt;/<span class="name">show</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">nohelp</span>&gt;</span>true<span class="tag">&lt;/<span class="name">nohelp</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">charset</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">charset</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">encoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">encoding</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">docencoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">docencoding</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 对构件进行GPG签名 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-gpg-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">phase</span>&gt;</span>verify<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>sign<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            nexus-staging 这个插件用于在最后执行一些仓库操作</span></span><br><span class="line"><span class="comment">            这些操作也可以手动在sonatype的仓库上进行,但是相对繁琐,推荐使用插件.</span></span><br><span class="line"><span class="comment">            手动操作不在本文进行描述,可以自行查阅[文档](https://central.sonatype.org/pages/releasing-the-deployment.html)</span></span><br><span class="line"><span class="comment">           --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.sonatype.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>nexus-staging-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6.8<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">extensions</span>&gt;</span>true<span class="tag">&lt;/<span class="name">extensions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">serverId</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">serverId</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">nexusUrl</span>&gt;</span>https://oss.sonatype.org/<span class="tag">&lt;/<span class="name">nexusUrl</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">autoReleaseAfterClose</span>&gt;</span>true<span class="tag">&lt;/<span class="name">autoReleaseAfterClose</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- 配置发布的仓库 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://oss.sonatype.org/content/repositories/snapshots/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://oss.sonatype.org/service/local/staging/deploy/maven2/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">profiles</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>上面的pom文件是从我的项目中截取的,全文可以看<a href="https://github.com/hadix-lin/springfox-plus/blob/master/pom.xml">这里</a></p>
-<p>另外还要在您的全局maven配置中添加如下内容</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servers</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 这个id要跟上面pom中配置的repository的id一致 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>oss<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 用户名/密码就是您在上面注册得到的 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>用户名<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>密码<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servers</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="准备GPG签名密钥"><a href="#准备GPG签名密钥" class="headerlink" title="准备GPG签名密钥"></a>准备GPG签名密钥</h3><p>上文中配置的maven-gpg-plugin需要本机配置好GPG密钥,GPG是一种非对称加密算法,密钥要公钥私钥,公钥需要上传到公钥服务器上,私钥安装在本地.</p>
-<p>在macOS下通过brew安装gpg命令,然后生成密钥:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">brew install gpg</span><br><span class="line"><span class="comment"># 检查是否安装成功</span></span><br><span class="line">gpg --version </span><br><span class="line"><span class="comment"># 生成密钥</span></span><br><span class="line">gpg --gen-key</span><br><span class="line"><span class="comment"># 之后会在命令行中以交互模式让你填写姓名,邮箱等等信息,最后输入两次用于保护密钥的密码</span></span><br><span class="line"><span class="comment"># 然后使用如下命令查看生成的密钥</span></span><br><span class="line">gpg --list-keys</span><br><span class="line"><span class="comment"># 如下输出</span></span><br><span class="line"><span class="comment"># /Users/hadix/.gnupg/pubring.kbx -&gt; 密钥文件,内含私钥</span></span><br><span class="line"><span class="comment"># -------------------------------</span></span><br><span class="line"><span class="comment"># pub   rsa2048 2019-04-21 [SC] [expires: 2021-04-20]</span></span><br><span class="line"><span class="comment">#       58FD688CA40BE2002C1B68C848492F673D89A858 --&gt;公钥</span></span><br><span class="line"><span class="comment"># uid           [ultimate] hadix &lt;hadix.lin@gamil.com&gt;</span></span><br><span class="line"><span class="comment"># sub   rsa2048 2019-04-21 [E] [expires: 2021-04-20]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后将公钥发布到密钥服务器</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net --send-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 如果发布失败请尝试如下命令</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net:80 --send-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 检查是否发布成功</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys &lt;您的公钥&gt;</span><br><span class="line"><span class="comment"># 如果失败请尝试如下命令</span></span><br><span class="line">gpg --keyserver hkp://pool.sks-keyservers.net:80 --recv-keys &lt;您的公钥&gt;</span><br></pre></td></tr></table></figure>
-
-<h2 id="STEP3-发布到sonatype仓库"><a href="#STEP3-发布到sonatype仓库" class="headerlink" title="STEP3 : 发布到sonatype仓库"></a>STEP3 : 发布到sonatype仓库</h2><p>上面已经配置好了maven的pom文件,可以直接使用如下命令进行发布</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mvn clean deploy -P release</span><br><span class="line"><span class="comment"># 如果构件过程中无法正确生成gpg签名,出现类似&quot;Exit Code 2&quot;的错误,那么请执行如下命令</span></span><br><span class="line"><span class="built_in">export</span> GPG_TTY=$(<span class="built_in">tty</span>)</span><br><span class="line">mvn clean deploy -P release</span><br><span class="line"><span class="comment"># 执行成功后 由于我们在上面的pom文件中配置了&lt;autoReleaseAfterClose&gt;true&lt;/autoReleaseAfterClose&gt;</span></span><br><span class="line"><span class="comment"># maven构件过程会自动进行release构件上架</span></span><br></pre></td></tr></table></figure>
-
-<p>如果您的项目版本号是以<code>-SNAPSHOT</code>结尾,那么构件将发布到snapshot仓库,不会同步到中央仓库.</p>
-<p>如果您的项目构建不满足上文中的先决条件,那么上述命令会返回类似如下的输出</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[ERROR] Rule failure <span class="keyword">while</span> trying to close staging repository with ID <span class="string">&quot;iogithubhadix-lin-1002&quot;</span>.</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Nexus Staging Rules Failure Report</span><br><span class="line">[ERROR] ==================================</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Repository <span class="string">&quot;iogithubhadix-lin-1002&quot;</span> failures</span><br><span class="line">[ERROR]   Rule <span class="string">&quot;pom-staging&quot;</span> failures</span><br><span class="line">[ERROR]     * Invalid POM: /io/github/hadix-lin/http/1.0/http-1.0.pom: Project name missing, Project description missing, Project URL missing</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR]</span><br><span class="line">[ERROR] Cleaning up <span class="built_in">local</span> stage directory after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Deleting context ac894b84a446a7.properties</span><br><span class="line">[ERROR] Cleaning up remote stage repositories after a Rule failure during close of staging repositories: [iogithubhadix-lin-1002]</span><br><span class="line">[ERROR]  * Dropping failed staging repository with ID <span class="string">&quot;iogithubhadix-lin-1002&quot;</span> (Rule failure during close of staging repositories: [iogithubhadix-lin-1002]).</span><br></pre></td></tr></table></figure>
-
-<p>按提示修改项目的pom文件即可.例如上面这段错误信息提示我的项目没有<code>Project name</code>.在pom中增加<code>&lt;name&gt;http&lt;/name&gt;</code>即可.</p>
-<h2 id="STEP4-回复ISSUE来发起同步"><a href="#STEP4-回复ISSUE来发起同步" class="headerlink" title="STEP4 : 回复ISSUE来发起同步"></a>STEP4 : 回复ISSUE来发起同步</h2><p>首次发布构件的时候,是不会自动同步到中央仓库的.当上面的步骤全部执行成功后,需要找到最初创建的ISSUE页面.在评论区用英文写一条评论,比如”the first release version(0.0.1) uploaded via maven”.然后耐心等待,会收到回复.像下面图中的样子.</p>
-<p><img src="https://i.loli.net/2019/05/15/5cdaf1737f70f93934.png" alt="image-20190427204606484"></p>
-<p>以后只要是同一个groupId的构件发布就不需要再来回复了.发布后过差不多两个小时就会自动同步到中央仓库.</p>
-<p>如果要发不不同groupId的构件,那么请重复STEP1中创建ISSUE的操作.</p>
-]]></content>
-      <tags>
-        <tag>tutorial</tag>
       </tags>
   </entry>
   <entry>
@@ -838,54 +886,6 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker network disconnect my-net my-nginx</span><br></pre></td></tr></table></figure>]]></content>
       <tags>
         <tag>docker</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>模块化工程</title>
-    <url>/2022/07/17/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B/</url>
-    <content><![CDATA[<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>人类对事物的认知过程是递归的。举个例子，我们如何识别一个物体是汽车，先看到一个物体，它有底盘、车架、外壳、内饰，看到这些我们觉得这可能是汽车，也可能知识汽车的模型。再打开机盖能看到发动机、变速箱，车底能看到车轮，我们进一步识别到这是一部真实的汽车。</p>
-<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B-%E6%A8%A1%E5%9D%97%E5%8C%96%E7%9A%84%E6%B1%BD%E8%BD%A6.png"></p>
-<p>随着我们一步步深入看到更多的汽车组成部分，我们便更确定这是一台汽车，这就是对一部汽车的递归认知过程。</p>
-<p>而对于天气，它是一个异常复杂的系统，我们很难直观的对其进行递归分析，这也是我们无法精准预测天气的原因。人类对事物的认知能力是有极限的。</p>
-<p>一辆汽车由数万个独立部件组成，很难说它不是个复杂系统，为什么我们可以很容易对它做递归分析。我们可以看到汽车是个高度模块化的系统，我们对它做递归分析的过程，实际上就是对其进行模块化拆解的过程。</p>
-<p>直接分析复杂系统很困难，但只要它能够拆解为独立的更小的模块，我们总能够将之拆解到一个简单系统层次，然后再去分析识别，最终实现对这个复杂系统的<strong>完全认知</strong>。</p>
-<blockquote>
-<p>一个系统越容易进行递归分析，我们越容易理解它，进一步，也越容易改造它。对于汽车如此，对于软件系统亦如是。</p>
-<p>软件工程的一个重要目标就是要令开发的软件系统更易扩展和维护，通过模块化方式构建一个系统，会令该系统易于理解，也就更容易实现这一目标。</p>
-</blockquote>
-<h2 id="额外的好处"><a href="#额外的好处" class="headerlink" title="额外的好处"></a>额外的好处</h2><p>除了另系统更容易被递归分析外，还具有以下好处：</p>
-<ol>
-<li>可重用：具备抽象良好接口的模块，可以很容易被重用，特别是基础组件。业务系统研发过程中，通过不断优化模块最终沉淀到最下层的模块通常与具体具体的业务语意无关了，自然而然就变成了可被重用的公共组件。</li>
-<li>可以灵活部署：不同的模块可以打包在一起部署，也可以利用SOA工具分布式部署。</li>
-<li>富有弹性：模块可以独立进行资源伸缩，提升整个系统的弹性。例如：汽车动力不足，可以加装一个发动机，实现四驱（这也是现在大部分电动车的四驱方案）。可以提供备胎，替换破损的轮胎。</li>
-</ol>
-<h2 id="模块化的障碍"><a href="#模块化的障碍" class="headerlink" title="模块化的障碍"></a>模块化的障碍</h2><ol>
-<li><p>循环依赖：</p>
-<p>如果两个模块间有循环依赖，那么当我们通过递归分析时将陷入无限递归，永远得不到结果。两个模块如果有循环依赖，那么他们是无法拆分的，实际上他们只能作为一个模块来使用。</p>
-</li>
-<li><p>封闭性不足：</p>
-<p>如果一个模块不仅开放有限的接口，那么它将可能被其他模块随意依赖，其自身难以被修改，因为它被迫与其他模块进行深度绑定，最终仅能作为其他模块的一部分存在。</p>
-<p>例如：如果车轮直接依赖变速箱齿轮进行传动，那么我们只能将变速箱和车轮安装在一起，可以想象这种结构是非常难加装转向装置的。</p>
-<blockquote>
-<p>实际上模块应当遵循所有SOLID原则。</p>
-<p>S：Single responsibility&#x2F;单一权责</p>
-<p>O：Open&#x2F;Closed&#x2F;开放封闭</p>
-<p>L：Liskov Substitution&#x2F;替换原则</p>
-<p>I：interface-segregation&#x2F;接口隔离</p>
-<p>D：Dependency inversion&#x2F;依赖反转</p>
-</blockquote>
-</li>
-<li><p>无法自我管理：</p>
-<p>如果一个模块无法管理自身的组件及其数据，那么它将不得不与能够管理这些的模块集成在一起。也就是说它必须与管理这些内容的组件集成在一起。</p>
-<p>例如：如果汽车内燃气燃烧室的大小必须由底盘决定，那么我们永远无法制造出可以安装在任意车辆中的发东西。</p>
-<blockquote>
-<p>模块提供的能力特性，必须由自身定义，而不取决于外部环境</p>
-</blockquote>
-</li>
-</ol>
-]]></content>
-      <tags>
-        <tag>架构</tag>
       </tags>
   </entry>
 </search>

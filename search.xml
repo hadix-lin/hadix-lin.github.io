@@ -30,29 +30,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Code Smell: Multi-Responsibility Methods : 多职责方法</title>
-    <url>/2019/04/23/Multi-Responsibility-Methods/</url>
-    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当我们发现一个过长的方法时,通常会想要将之拆分为几个小方法.在某些情况下这非常容易,例如:一个很长的方法有很多参数,这些参数可以明显分为两组,一组只在方法的前一半使用,另一组在后一半使用.可以很明确地知道在什么位置将长方法拆成两个小方法.</p>
-<p>有类似这种表现的方法通常都具有多重职责,逻辑十分复杂.在上面的举例中,虽然可以很明确知道在什么位置将代码拆开,但是可能前半部分会有多个返回值,需要传递给后半部分.</p>
-<p>复杂的方法不仅逻辑很难理解,也很难重构,几乎不可能重用.后续的维护多半只能是重写.</p>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>方法参数可以分组,分别在方法代码中不重合的段落中使用.例如三个用在前半部分,两个用在后半部分.</li>
-<li>Boolean类型的参数用来控制方法中某些代码块的开关.</li>
-<li>方法中的一部分只是用来计算一个值供另外一部分使用.</li>
-</ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>将明显的代码块拆分为单独的方法(例如一个检查Boolean类型参数的if语句块)</li>
-<li>如果两个构造函数没有重合的参数,且非常复杂.那么可以将这个类拆分为两个单独的类.</li>
-</ul>
-<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> ValidatedField <span class="title function_">validateQuery</span><span class="params">(Class clazz, Mapper mapper, String propertyName, FilterOperator op,</span></span><br><span class="line"><span class="params">                                    Object val, <span class="type">boolean</span> validateNames, <span class="type">boolean</span> validateTypes)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">ValidatedField</span> <span class="variable">validatedField</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ValidatedField</span>(propertyName);</span><br><span class="line">    <span class="keyword">if</span> (!propertyName.startsWith(<span class="string">&quot;$&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">final</span> String[] pathElements = propertyName.split(<span class="string">&quot;\\.&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> List&lt;String&gt; databasePathElements = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(asList(pathElements));</span><br><span class="line">        <span class="keyword">if</span> (clazz == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> validatedField;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">MappedClass</span> <span class="variable">mc</span> <span class="operator">=</span> mapper.getMappedClass(clazz);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; ; ) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">String</span> <span class="variable">fieldName</span> <span class="operator">=</span> pathElements[i];</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">fieldIsArrayOperator</span> <span class="operator">=</span> fieldName.equals(<span class="string">&quot;$&quot;</span>);</span><br><span class="line">            <span class="keyword">final</span> Optional&lt;MappedField&gt; mf = getMappedField(fieldName, mc, databasePathElements,</span><br><span class="line">                                                            i, propertyName, validateNames,</span><br><span class="line">                                                            fieldIsArrayOperator);</span><br><span class="line">            validatedField.mappedField = mf;</span><br><span class="line"></span><br><span class="line">            i++;</span><br><span class="line">            <span class="keyword">if</span> (mf.isPresent() &amp;&amp; mf.get().isMap()) &#123;</span><br><span class="line">                <span class="comment">//skip the map key validation, and move to the next fieldName</span></span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (i &gt;= pathElements.length) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!fieldIsArrayOperator) &#123;</span><br><span class="line">                <span class="comment">//catch people trying to search/update into @Reference/@Serialized fields</span></span><br><span class="line">                <span class="keyword">if</span> (validateNames &amp;&amp; !canQueryPast(mf.get())) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;Cannot use dot-notation past &#x27;%s&#x27; in &#x27;%s&#x27;; found while validating - %s&quot;</span>,</span><br><span class="line">                             fieldName, mc.getClazz().getName(), propertyName));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!mf.isPresent() &amp;&amp; mc.isInterface()) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!mf.isPresent()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;The field &#x27;%s&#x27; could not be found in &#x27;%s&#x27;&quot;</span>, propertyName, </span><br><span class="line">                             mc.getClazz().getName()));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//get the next MappedClass for the next field validation</span></span><br><span class="line">                <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> mf.get();</span><br><span class="line">                mc = mapper.getMappedClass((mappedField.isSingleValue()) </span><br><span class="line">                                           ? mappedField.getType() </span><br><span class="line">                                           : mappedField.getSubClass());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//record new property string</span></span><br><span class="line">        validatedField.databasePath = databasePathElements.stream().collect(joining(<span class="string">&quot;.&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (validateTypes &amp;&amp; validatedField.mappedField.isPresent()) &#123;</span><br><span class="line">            <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> validatedField.mappedField.get();</span><br><span class="line">            List&lt;ValidationFailure&gt; typeValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForType</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getType(), op, val, typeValidationFailures);</span><br><span class="line">            List&lt;ValidationFailure&gt; subclassValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForSubclass</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getSubClass(), op, val, subclassValidationFailures);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ((mappedField.isSingleValue() &amp;&amp; !compatibleForType)</span><br><span class="line">                 || mappedField.isMultipleValues() &amp;&amp; !(compatibleForSubclass || compatibleForType)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (LOG.isWarningEnabled()) &#123;</span><br><span class="line">                    LOG.warning(</span><br><span class="line">                      format(<span class="string">&quot;The type(s) for the query/update may be inconsistent; &quot;</span></span><br><span class="line">                             +<span class="string">&quot;using an instance of type &#x27;%s&#x27; for the field &#x27;%s.%s&#x27;&quot;</span></span><br><span class="line">                             +<span class="string">&quot; which is declared as &#x27;%s&#x27;&quot;</span>,</span><br><span class="line">                             val.getClass().getName(), mappedField.getDeclaringClass().getName(),</span><br><span class="line">                             mappedField.getJavaFieldName(), mappedField.getType().getName()));</span><br><span class="line">                    typeValidationFailures.addAll(subclassValidationFailures);</span><br><span class="line">                    LOG.warning(<span class="string">&quot;Validation warnings: \n&quot;</span> + typeValidationFailures);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> validatedField;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>第一步,观察11-48行,这段代码计算了<code>MapperClass mc</code>的值供后面的代码使用,可以拆解出来.</p>
-]]></content>
-      <tags>
-        <tag>coding</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Code Smell : If-Statements : 条件语句</title>
     <url>/2019/04/23/If-Statements/</url>
     <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p><code>if</code>可能是代码中最常用的逻辑控制语句,但不合理的复杂的<code>if</code>会让代码变得冗长复杂难以理解.</p>
@@ -120,25 +97,50 @@
       </tags>
   </entry>
   <entry>
-    <title>Code Smell : Too Many Problems : 太多的问题</title>
-    <url>/2019/04/23/Too-Many-Problems/</url>
-    <content><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
-<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
-<ol>
-<li>将方法拆分多个相对更短的代码段</li>
-<li>针对每个方法处理异味,但一次仅针对一种异味</li>
-<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
-</ol>
+    <title>Code Smell: Multi-Responsibility Methods : 多职责方法</title>
+    <url>/2019/04/23/Multi-Responsibility-Methods/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当我们发现一个过长的方法时,通常会想要将之拆分为几个小方法.在某些情况下这非常容易,例如:一个很长的方法有很多参数,这些参数可以明显分为两组,一组只在方法的前一半使用,另一组在后一半使用.可以很明确地知道在什么位置将长方法拆成两个小方法.</p>
+<p>有类似这种表现的方法通常都具有多重职责,逻辑十分复杂.在上面的举例中,虽然可以很明确知道在什么位置将代码拆开,但是可能前半部分会有多个返回值,需要传递给后半部分.</p>
+<p>复杂的方法不仅逻辑很难理解,也很难重构,几乎不可能重用.后续的维护多半只能是重写.</p>
 <h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>非常长或复杂的方法或类.</li>
-<li>当你大概流量代码时能够发现多种异味.</li>
-<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
+<li>方法参数可以分组,分别在方法代码中不重合的段落中使用.例如三个用在前半部分,两个用在后半部分.</li>
+<li>Boolean类型的参数用来控制方法中某些代码块的开关.</li>
+<li>方法中的一部分只是用来计算一个值供另外一部分使用.</li>
 </ul>
 <h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>将代码拆分为多个段落</li>
-<li>一次仅尝试修复一种异味</li>
-<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
-<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
+<li>将明显的代码块拆分为单独的方法(例如一个检查Boolean类型参数的if语句块)</li>
+<li>如果两个构造函数没有重合的参数,且非常复杂.那么可以将这个类拆分为两个单独的类.</li>
+</ul>
+<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> ValidatedField <span class="title function_">validateQuery</span><span class="params">(Class clazz, Mapper mapper, String propertyName, FilterOperator op,</span></span><br><span class="line"><span class="params">                                    Object val, <span class="type">boolean</span> validateNames, <span class="type">boolean</span> validateTypes)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">ValidatedField</span> <span class="variable">validatedField</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ValidatedField</span>(propertyName);</span><br><span class="line">    <span class="keyword">if</span> (!propertyName.startsWith(<span class="string">&quot;$&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">final</span> String[] pathElements = propertyName.split(<span class="string">&quot;\\.&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> List&lt;String&gt; databasePathElements = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(asList(pathElements));</span><br><span class="line">        <span class="keyword">if</span> (clazz == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> validatedField;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">MappedClass</span> <span class="variable">mc</span> <span class="operator">=</span> mapper.getMappedClass(clazz);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; ; ) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">String</span> <span class="variable">fieldName</span> <span class="operator">=</span> pathElements[i];</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">fieldIsArrayOperator</span> <span class="operator">=</span> fieldName.equals(<span class="string">&quot;$&quot;</span>);</span><br><span class="line">            <span class="keyword">final</span> Optional&lt;MappedField&gt; mf = getMappedField(fieldName, mc, databasePathElements,</span><br><span class="line">                                                            i, propertyName, validateNames,</span><br><span class="line">                                                            fieldIsArrayOperator);</span><br><span class="line">            validatedField.mappedField = mf;</span><br><span class="line"></span><br><span class="line">            i++;</span><br><span class="line">            <span class="keyword">if</span> (mf.isPresent() &amp;&amp; mf.get().isMap()) &#123;</span><br><span class="line">                <span class="comment">//skip the map key validation, and move to the next fieldName</span></span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (i &gt;= pathElements.length) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!fieldIsArrayOperator) &#123;</span><br><span class="line">                <span class="comment">//catch people trying to search/update into @Reference/@Serialized fields</span></span><br><span class="line">                <span class="keyword">if</span> (validateNames &amp;&amp; !canQueryPast(mf.get())) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;Cannot use dot-notation past &#x27;%s&#x27; in &#x27;%s&#x27;; found while validating - %s&quot;</span>,</span><br><span class="line">                             fieldName, mc.getClazz().getName(), propertyName));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!mf.isPresent() &amp;&amp; mc.isInterface()) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!mf.isPresent()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;The field &#x27;%s&#x27; could not be found in &#x27;%s&#x27;&quot;</span>, propertyName, </span><br><span class="line">                             mc.getClazz().getName()));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//get the next MappedClass for the next field validation</span></span><br><span class="line">                <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> mf.get();</span><br><span class="line">                mc = mapper.getMappedClass((mappedField.isSingleValue()) </span><br><span class="line">                                           ? mappedField.getType() </span><br><span class="line">                                           : mappedField.getSubClass());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//record new property string</span></span><br><span class="line">        validatedField.databasePath = databasePathElements.stream().collect(joining(<span class="string">&quot;.&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (validateTypes &amp;&amp; validatedField.mappedField.isPresent()) &#123;</span><br><span class="line">            <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> validatedField.mappedField.get();</span><br><span class="line">            List&lt;ValidationFailure&gt; typeValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForType</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getType(), op, val, typeValidationFailures);</span><br><span class="line">            List&lt;ValidationFailure&gt; subclassValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForSubclass</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getSubClass(), op, val, subclassValidationFailures);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ((mappedField.isSingleValue() &amp;&amp; !compatibleForType)</span><br><span class="line">                 || mappedField.isMultipleValues() &amp;&amp; !(compatibleForSubclass || compatibleForType)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (LOG.isWarningEnabled()) &#123;</span><br><span class="line">                    LOG.warning(</span><br><span class="line">                      format(<span class="string">&quot;The type(s) for the query/update may be inconsistent; &quot;</span></span><br><span class="line">                             +<span class="string">&quot;using an instance of type &#x27;%s&#x27; for the field &#x27;%s.%s&#x27;&quot;</span></span><br><span class="line">                             +<span class="string">&quot; which is declared as &#x27;%s&#x27;&quot;</span>,</span><br><span class="line">                             val.getClass().getName(), mappedField.getDeclaringClass().getName(),</span><br><span class="line">                             mappedField.getJavaFieldName(), mappedField.getType().getName()));</span><br><span class="line">                    typeValidationFailures.addAll(subclassValidationFailures);</span><br><span class="line">                    LOG.warning(<span class="string">&quot;Validation warnings: \n&quot;</span> + typeValidationFailures);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> validatedField;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一步,观察11-48行,这段代码计算了<code>MapperClass mc</code>的值供后面的代码使用,可以拆解出来.</p>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Code Smell: Mutation : 突变</title>
+    <url>/2019/04/23/Mutation/</url>
+    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
+<ul>
+<li>类的字段导致对象状态是可变的</li>
+<li>方法的参数&#x2F;局部变量可以重复赋值</li>
+<li>集合容器的内容可变</li>
+</ul>
+<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>对变量不只一次赋值</li>
+<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
+<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
+<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
+<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
+<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
+<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
+<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
 </ul>
 ]]></content>
       <tags>
@@ -226,57 +228,112 @@
       </tags>
   </entry>
   <entry>
-    <title>我的IDEA插件列表</title>
-    <url>/2019/05/10/%E6%88%91%E7%9A%84IDEA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8/</url>
-    <content><![CDATA[<p>我算是个IDEA资深用户了,应该有10年了吧.</p>
-<p>IDEA默认提供的插件功能已经相当丰富,对流行的开源框架支持非常好.</p>
-<p>下面说一下我安装的非默认插件:</p>
-<h3 id="IdeaVim"><a href="#IdeaVim" class="headerlink" title="IdeaVim"></a>IdeaVim</h3><p>在IDEA的编辑器使用vim编辑模式,如果你想尝试脱离鼠标做全键盘操作,这个就是神器.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/164-ideavim">IdeaVim - Plugins | JetBrains</a></p>
-<h3 id="IdeaVimExtension"><a href="#IdeaVimExtension" class="headerlink" title="IdeaVimExtension"></a>IdeaVimExtension</h3><p>作为上面插件的扩展,只提供一个功能,就是在normal模式的时候保持输入法是英文状态.你知道中文用户总是有各种场景需要切换输入法的.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/9615-ideavimextension">IdeaVimExtension - Plugins | JetBrains</a></p>
-<h3 id="Google-Java-Format"><a href="#Google-Java-Format" class="headerlink" title="Google Java Format"></a>Google Java Format</h3><p>按照Google的Java代码规范格式化代码,有了这个插件就不用在IDE里面这种配置了,这个插件帮助搞定一切,这个插件格式化的效果我非常喜欢,代码紧凑,易读.如果团队没有特别的需求,可以利用这个插件做团队代码规范实施.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/8527-google-java-format">google-java-format - Plugins | JetBrains</a></p>
-<h3 id="Lombok-Plugin"><a href="#Lombok-Plugin" class="headerlink" title="Lombok Plugin"></a>Lombok Plugin</h3><p>lombok工具可以通过注解处理器来生成样板代码,比如JavaBean的getter,setter.这个插件帮助IDE识别自动生成的代码.非常好用的工具,一定要安装.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/6317-lombok-plugin">Lombok Plugin - Plugins | JetBrains</a></p>
-<h3 id="Maven-Helper"><a href="#Maven-Helper" class="headerlink" title="Maven Helper"></a>Maven Helper</h3><p>maven的扩展工具,maven用户一定要安装!!!.用来分析依赖冲突相当好用.IDEA自带的依赖图真的很难用.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/7179-maven-helper">Maven Helper - Plugins | JetBrains</a></p>
-<h3 id="ignore"><a href="#ignore" class="headerlink" title=".ignore"></a>.ignore</h3><p>这个插件帮助你编写各种vcs系统的ignore文件,例如.gitignore.提供语法高亮,并可以将忽略的文件和文件夹用特别的颜色标记出来.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/7495--ignore">.ignore - Plugins | JetBrains</a></p>
-<h3 id="String-Manipulation"><a href="#String-Manipulation" class="headerlink" title="String Manipulation"></a>String Manipulation</h3><p>提供非常多的文本操作,非常好用,我经常用这个来编写分表的SQL语句,结合IDEA的列编辑功能批量生成序列号之类的操作骚得很.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/2162-string-manipulation">String Manipulation - Plugins | JetBrains</a></p>
-<h3 id="Custom-Postfix-Templates"><a href="#Custom-Postfix-Templates" class="headerlink" title="Custom Postfix Templates"></a>Custom Postfix Templates</h3><p>IDEA的后缀自动完成功能特别好用,比如写一个表达式可以通过接一个.var自动声明变量.这个插件提供了非常多的后缀模板,而且支持在线更新,功能非常丰富,支持多种编程语言..toString,toInt,toLong….</p>
-<p><a href="https://plugins.jetbrains.com/plugin/9862-custom-postfix-templates">Custom Postfix Templates - Plugins | JetBrains</a></p>
-<h3 id="Free-Mybatis-Plugin"><a href="#Free-Mybatis-Plugin" class="headerlink" title="Free Mybatis Plugin"></a>Free Mybatis Plugin</h3><p>mybatis插件的免费支持框架,提供xml mapper代码检查和导航等功能.这个免费插件的功能对我而言够用了.还有个收费的MbatisPlugin,功能更丰富,但是我没有特别强的需求用不上.</p>
-<p>另外再次推荐一个Myabtis的扩展框架<a href="https://mybatis.plus/">MybatisPlus</a>非常好用.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/8321-free-mybatis-plugin">Free MyBatis plugin - Plugins | JetBrains</a></p>
-<h3 id="Mybatis-Log-Plugin"><a href="#Mybatis-Log-Plugin" class="headerlink" title="Mybatis Log Plugin"></a>Mybatis Log Plugin</h3><p>将myabtis输出的日志整理成更易读的形式进行输出,在调试sql语句的时候还挺有用的.个人用的不是很多.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/10065-mybatis-log-plugin">MyBatis Log Plugin - Plugins | JetBrains</a></p>
-<h3 id="Grep-Console"><a href="#Grep-Console" class="headerlink" title="Grep Console"></a>Grep Console</h3><p>对控制台输出的日志按日志级别进行高亮,可以进行很多自定义,我用的比较简单,安装之后就使用了默认配置.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/7125-grep-console">Grep Console - Plugins | JetBrains</a></p>
-<h3 id="BashSupport"><a href="#BashSupport" class="headerlink" title="BashSupport"></a>BashSupport</h3><p>编写bash标本的辅助工具.个人不怎么常用,偶尔用来看一下别人写的脚本,有语法高亮.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/4230-bashsupport">BashSupport - Plugins | JetBrains</a></p>
-<h3 id="HotSwapAgent"><a href="#HotSwapAgent" class="headerlink" title="HotSwapAgent"></a>HotSwapAgent</h3><p>JVM原有的HotSwap功能可以在类型和方法定义未变更的情况下对类进行重加载,在调试时非常有用.这个插件可以支持类型变更比如添加属性,方法之后进行重加载,也提供了一些框架的支持,有一定效果,但是支持不完善.用得不多.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/9552-hotswapagent">HotSwapAgent - Plugins | JetBrains</a></p>
-<h3 id="Key-Promoter-X"><a href="#Key-Promoter-X" class="headerlink" title="Key Promoter X"></a>Key Promoter X</h3><p>利用这个插件来熟悉IDEA的快捷键,每当你用鼠标单击UI上的功能按钮的时候,这个插件会通过右下角的气泡消息提示你对应的快捷键是什么.还会统计次数.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/9792-key-promoter-x">Key Promoter X - Plugins | JetBrains</a></p>
-<h3 id="Kotlin-Sequence-Debugger"><a href="#Kotlin-Sequence-Debugger" class="headerlink" title="Kotlin Sequence Debugger"></a>Kotlin Sequence Debugger</h3><p>提供类型Java Stream Debugger的功能,在调试的时候可以针对<code>.filter&#123;&#125;.foreach&#123;&#125;</code>这样的代码进行调试,对每一步操作提供详细的视图,Java8和kotlin的用户强烈建议使用这个插件.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/10301-kotlin-sequence-debugger">Kotlin Sequence Debugger - Plugins | JetBrains</a></p>
-<h3 id="MetricsReloaded"><a href="#MetricsReloaded" class="headerlink" title="MetricsReloaded"></a>MetricsReloaded</h3><p>提供了各种算法来评估代码的复杂度,对代码质量评估有帮助.关注代码质量的用户请一定试用一下.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/93-metricsreloaded">MetricsReloaded - Plugins | JetBrains</a></p>
-<h3 id="Rainbow-Brackets"><a href="#Rainbow-Brackets" class="headerlink" title="Rainbow Brackets"></a>Rainbow Brackets</h3><p>增强的括号匹配插件,将配对的括号标记成各种各样的颜色,配色非常好看.对代码阅读有一定帮助.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/10080-rainbow-brackets">Rainbow Brackets - Plugins | JetBrains</a></p>
-<h3 id="Translation"><a href="#Translation" class="headerlink" title="Translation"></a>Translation</h3><p>最近才安装的插件,利用Google,有道或百度的API将翻译功能集成到IDE里面,英文不是很好的朋友建议安装.翻译个单词,找个变量名什么的还是挺方便的.</p>
-<p>不过使用GoogleApi需要翻墙,有道和百度需要申请应用开发者账号,而且可能还要被收费.</p>
-<p><a href="https://plugins.jetbrains.com/plugin/8579-translation">Translation - Plugins | JetBrains</a></p>
-<h3 id="Settings-Repository"><a href="#Settings-Repository" class="headerlink" title="Settings Repository"></a>Settings Repository</h3><p>这个插件是自带的,开启之后可以将IDEA的配置同步到git仓库(比如github).</p>
-<p>使用说明再次<a href="https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#settings-repository">https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#settings-repository</a></p>
-<p>最后附上我的IDEA配置仓库: </p>
-<p>GitHub仓库主页:  <a href="https://github.com/hadix-lin/idea-setting">https://github.com/hadix-lin/idea-setting</a></p>
-<p>仓库地址: <a href="https://github.com/hadix-lin/idea-setting.git">https://github.com/hadix-lin/idea-setting.git</a></p>
+    <title>Code Smell : Null : 空值</title>
+    <url>/2019/04/23/Null/</url>
+    <content><![CDATA[<h2 id="Null表示什么"><a href="#Null表示什么" class="headerlink" title="Null表示什么?"></a>Null表示什么?</h2><p>我们的代码用Null表示了太多的事情:</p>
+<ul>
+<li>有意或无意导致的从未初始化的值</li>
+<li>无效值&#x2F;不需要的值</li>
+<li>值不存在(比如从数据库中查找不到)</li>
+<li>可能出现了严重的错误导致本该存在的值没有了</li>
+<li>其他各种情况</li>
+</ul>
+<p>由于上述种种,NPE总是时不时出现在我们的程序中.NPE导致的BUG也数不胜数,没见过NPE的程序员估计还没出生.</p>
+<p>Null是个尤其难解决的问题,主要原因是开发人员很难明确的知道Null表达的实际意义.从字面上看Null表示没有任何含义的值.但用它来表达上面的任何情况都不足够清楚.</p>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><p>当Null在你的程序里面成为顽疾,往往会有如下症状.</p>
+<ul>
+<li><p>随处可见的Null检查<code>if(xx != null)</code>.</p>
+<p>这种情况说明开发人员不清楚传递的变量为null的意义,只能无奈的做防御式Null检查.</p>
+<p>开发人员永远不知道返回值是否可能为null,也永远无法保证在所有地方都使用的Null检查.</p>
+</li>
+<li><p>方法直接使用<code>return null</code></p>
+</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>Java8+或guava的<code>Optional</code>,它虽然不是处理一切Null问题的银弹,但是当一个<code>public</code>方法通过明确返回<code>null</code>来表示效果不存在时,使用<code>Optional</code>是更好的方案.</li>
+<li><code>@NotNull/@Nullable</code>在Intellij,guava,lombok,jsr305中都提供了这样的注解,Intellij IDEA对这些注解的提供了编码时检查.在IDE里面查看一个方法,将<code>@NotNull</code>临时添加在参数前,IDE会告知你该参数是否有被传递null值,如果没有,那么你可以去掉该注解,然后在Javadoc中加入参数不能为null的说明.当然如果你愿意保留<code>@NotNull</code>注解,可以更显著地提醒代码的维护人员,但是需要引入一个注解依赖.</li>
+<li>在异常处理中返回null是非常不友好的,调用者往往不希望收到null值,进而导致NPE.整个过程缺少对错误信息的描述.应当改为抛出一个具有描述信息的异常,这对发现错误和分析问题更有价值.</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果方法可能返回null,那么考虑改为返回<code>Optional</code>.</p>
+<p>方法的参数通过<code>@NotNull/@Nullable</code>来告知调用者是否允许传递null值,同时为IDE的静态代码分析提供帮助.</p>
+<p>异常处理中永远不要返回null值,改为抛出具有描述信息的异常.</p>
 ]]></content>
       <tags>
-        <tag>IDE</tag>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Code Smell : Too Many Problems : 太多的问题</title>
+    <url>/2019/04/23/Too-Many-Problems/</url>
+    <content><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
+<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
+<ol>
+<li>将方法拆分多个相对更短的代码段</li>
+<li>针对每个方法处理异味,但一次仅针对一种异味</li>
+<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
+</ol>
+<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
+<li>非常长或复杂的方法或类.</li>
+<li>当你大概流量代码时能够发现多种异味.</li>
+<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
+</ul>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
+<li>将代码拆分为多个段落</li>
+<li>一次仅尝试修复一种异味</li>
+<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
+<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>coding</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>模块化工程</title>
+    <url>/2022/07/17/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B/</url>
+    <content><![CDATA[<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>人类对事物的认知过程是递归的。举个例子，我们如何识别一个物体是汽车，先看到一个物体，它有底盘、车架、外壳、内饰，看到这些我们觉得这可能是汽车，也可能知识汽车的模型。再打开机盖能看到发动机、变速箱，车底能看到车轮，我们进一步识别到这是一部真实的汽车。</p>
+<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B-%E6%A8%A1%E5%9D%97%E5%8C%96%E7%9A%84%E6%B1%BD%E8%BD%A6-20220717232151090.png" alt="模块化的汽车"></p>
+<p>随着我们一步步深入看到更多的汽车组成部分，我们便更确定这是一台汽车，这就是对一部汽车的递归认知过程。</p>
+<p>而对于天气，它是一个异常复杂的系统，我们很难直观的对其进行递归分析，这也是我们无法精准预测天气的原因。人类对事物的认知能力是有极限的。</p>
+<p>一辆汽车由数万个独立部件组成，很难说它不是个复杂系统，为什么我们可以很容易对它做递归分析。我们可以看到汽车是个高度模块化的系统，我们对它做递归分析的过程，实际上就是对其进行模块化拆解的过程。</p>
+<p>直接分析复杂系统很困难，但只要它能够拆解为独立的更小的模块，我们总能够将之拆解到一个简单系统层次，然后再去分析识别，最终实现对这个复杂系统的<strong>完全认知</strong>。</p>
+<blockquote>
+<p>一个系统越容易进行递归分析，我们越容易理解它，进一步，也越容易改造它。对于汽车如此，对于软件系统亦如是。</p>
+<p>软件工程的一个重要目标就是要令开发的软件系统更易扩展和维护，通过模块化方式构建一个系统，会令该系统易于理解，也就更容易实现这一目标。</p>
+</blockquote>
+<h2 id="额外的好处"><a href="#额外的好处" class="headerlink" title="额外的好处"></a>额外的好处</h2><p>除了令系统更容易被递归分析外，还具有以下好处：</p>
+<ol>
+<li>可重用：具备抽象良好接口的模块，可以很容易被重用，特别是基础组件。业务系统研发过程中，通过不断优化模块最终沉淀到最下层的模块通常与具体具体的业务语意无关了，自然而然就变成了可被重用的公共组件。</li>
+<li>可以灵活部署：不同的模块可以打包在一起部署，也可以利用SOA工具分布式部署。</li>
+<li>富有弹性：模块可以独立进行资源伸缩，提升整个系统的弹性。例如：汽车动力不足，可以加装一个发动机，实现四驱（这也是现在大部分电动车的四驱方案）。可以提供备胎，替换破损的轮胎。</li>
+</ol>
+<h2 id="模块化的障碍"><a href="#模块化的障碍" class="headerlink" title="模块化的障碍"></a>模块化的障碍</h2><ol>
+<li><p>循环依赖：</p>
+<p>如果两个模块间有循环依赖，那么当我们通过递归分析时将陷入无限递归，永远得不到结果。两个模块如果有循环依赖，那么他们是无法拆分的，实际上他们只能作为一个模块来使用。</p>
+</li>
+<li><p>封闭性不足：</p>
+<p>如果一个模块不仅开放有限的接口，那么它将可能被其他模块随意依赖，其自身难以被修改，因为它被迫与其他模块进行深度绑定，最终仅能作为其他模块的一部分存在。</p>
+<p>例如：如果车轮直接依赖变速箱齿轮进行传动，那么我们只能将变速箱和车轮安装在一起，可以想象这种结构是非常难加装转向装置的。</p>
+<blockquote>
+<p>实际上模块应当遵循所有SOLID原则。</p>
+<p>S：Single responsibility&#x2F;单一权责</p>
+<p>O：Open&#x2F;Closed&#x2F;开放封闭</p>
+<p>L：Liskov Substitution&#x2F;替换原则</p>
+<p>I：interface-segregation&#x2F;接口隔离</p>
+<p>D：Dependency inversion&#x2F;依赖反转</p>
+</blockquote>
+</li>
+<li><p>无法自我管理：</p>
+<p>如果一个模块无法管理自身的组件及其数据，那么它将不得不与能够管理这些的模块集成在一起。也就是说它必须与管理这些内容的组件集成在一起。</p>
+<p>例如：如果汽车内燃气燃烧室的大小必须由底盘决定，那么我们永远无法制造出可以安装在任意车辆中的发东西。</p>
+<blockquote>
+<p>模块提供的能力特性，必须由自身定义，而不取决于外部环境</p>
+</blockquote>
+</li>
+</ol>
+]]></content>
+      <tags>
+        <tag>架构</tag>
       </tags>
   </entry>
   <entry>
@@ -403,66 +460,57 @@
       </tags>
   </entry>
   <entry>
-    <title>Code Smell : Null : 空值</title>
-    <url>/2019/04/23/Null/</url>
-    <content><![CDATA[<h2 id="Null表示什么"><a href="#Null表示什么" class="headerlink" title="Null表示什么?"></a>Null表示什么?</h2><p>我们的代码用Null表示了太多的事情:</p>
-<ul>
-<li>有意或无意导致的从未初始化的值</li>
-<li>无效值&#x2F;不需要的值</li>
-<li>值不存在(比如从数据库中查找不到)</li>
-<li>可能出现了严重的错误导致本该存在的值没有了</li>
-<li>其他各种情况</li>
-</ul>
-<p>由于上述种种,NPE总是时不时出现在我们的程序中.NPE导致的BUG也数不胜数,没见过NPE的程序员估计还没出生.</p>
-<p>Null是个尤其难解决的问题,主要原因是开发人员很难明确的知道Null表达的实际意义.从字面上看Null表示没有任何含义的值.但用它来表达上面的任何情况都不足够清楚.</p>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><p>当Null在你的程序里面成为顽疾,往往会有如下症状.</p>
-<ul>
-<li><p>随处可见的Null检查<code>if(xx != null)</code>.</p>
-<p>这种情况说明开发人员不清楚传递的变量为null的意义,只能无奈的做防御式Null检查.</p>
-<p>开发人员永远不知道返回值是否可能为null,也永远无法保证在所有地方都使用的Null检查.</p>
-</li>
-<li><p>方法直接使用<code>return null</code></p>
-</li>
-</ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>Java8+或guava的<code>Optional</code>,它虽然不是处理一切Null问题的银弹,但是当一个<code>public</code>方法通过明确返回<code>null</code>来表示效果不存在时,使用<code>Optional</code>是更好的方案.</li>
-<li><code>@NotNull/@Nullable</code>在Intellij,guava,lombok,jsr305中都提供了这样的注解,Intellij IDEA对这些注解的提供了编码时检查.在IDE里面查看一个方法,将<code>@NotNull</code>临时添加在参数前,IDE会告知你该参数是否有被传递null值,如果没有,那么你可以去掉该注解,然后在Javadoc中加入参数不能为null的说明.当然如果你愿意保留<code>@NotNull</code>注解,可以更显著地提醒代码的维护人员,但是需要引入一个注解依赖.</li>
-<li>在异常处理中返回null是非常不友好的,调用者往往不希望收到null值,进而导致NPE.整个过程缺少对错误信息的描述.应当改为抛出一个具有描述信息的异常,这对发现错误和分析问题更有价值.</li>
-</ul>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果方法可能返回null,那么考虑改为返回<code>Optional</code>.</p>
-<p>方法的参数通过<code>@NotNull/@Nullable</code>来告知调用者是否允许传递null值,同时为IDE的静态代码分析提供帮助.</p>
-<p>异常处理中永远不要返回null值,改为抛出具有描述信息的异常.</p>
+    <title>我的IDEA插件列表</title>
+    <url>/2019/05/10/%E6%88%91%E7%9A%84IDEA%E6%8F%92%E4%BB%B6%E5%88%97%E8%A1%A8/</url>
+    <content><![CDATA[<p>我算是个IDEA资深用户了,应该有10年了吧.</p>
+<p>IDEA默认提供的插件功能已经相当丰富,对流行的开源框架支持非常好.</p>
+<p>下面说一下我安装的非默认插件:</p>
+<h3 id="IdeaVim"><a href="#IdeaVim" class="headerlink" title="IdeaVim"></a>IdeaVim</h3><p>在IDEA的编辑器使用vim编辑模式,如果你想尝试脱离鼠标做全键盘操作,这个就是神器.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/164-ideavim">IdeaVim - Plugins | JetBrains</a></p>
+<h3 id="IdeaVimExtension"><a href="#IdeaVimExtension" class="headerlink" title="IdeaVimExtension"></a>IdeaVimExtension</h3><p>作为上面插件的扩展,只提供一个功能,就是在normal模式的时候保持输入法是英文状态.你知道中文用户总是有各种场景需要切换输入法的.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/9615-ideavimextension">IdeaVimExtension - Plugins | JetBrains</a></p>
+<h3 id="Google-Java-Format"><a href="#Google-Java-Format" class="headerlink" title="Google Java Format"></a>Google Java Format</h3><p>按照Google的Java代码规范格式化代码,有了这个插件就不用在IDE里面这种配置了,这个插件帮助搞定一切,这个插件格式化的效果我非常喜欢,代码紧凑,易读.如果团队没有特别的需求,可以利用这个插件做团队代码规范实施.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/8527-google-java-format">google-java-format - Plugins | JetBrains</a></p>
+<h3 id="Lombok-Plugin"><a href="#Lombok-Plugin" class="headerlink" title="Lombok Plugin"></a>Lombok Plugin</h3><p>lombok工具可以通过注解处理器来生成样板代码,比如JavaBean的getter,setter.这个插件帮助IDE识别自动生成的代码.非常好用的工具,一定要安装.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/6317-lombok-plugin">Lombok Plugin - Plugins | JetBrains</a></p>
+<h3 id="Maven-Helper"><a href="#Maven-Helper" class="headerlink" title="Maven Helper"></a>Maven Helper</h3><p>maven的扩展工具,maven用户一定要安装!!!.用来分析依赖冲突相当好用.IDEA自带的依赖图真的很难用.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/7179-maven-helper">Maven Helper - Plugins | JetBrains</a></p>
+<h3 id="ignore"><a href="#ignore" class="headerlink" title=".ignore"></a>.ignore</h3><p>这个插件帮助你编写各种vcs系统的ignore文件,例如.gitignore.提供语法高亮,并可以将忽略的文件和文件夹用特别的颜色标记出来.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/7495--ignore">.ignore - Plugins | JetBrains</a></p>
+<h3 id="String-Manipulation"><a href="#String-Manipulation" class="headerlink" title="String Manipulation"></a>String Manipulation</h3><p>提供非常多的文本操作,非常好用,我经常用这个来编写分表的SQL语句,结合IDEA的列编辑功能批量生成序列号之类的操作骚得很.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/2162-string-manipulation">String Manipulation - Plugins | JetBrains</a></p>
+<h3 id="Custom-Postfix-Templates"><a href="#Custom-Postfix-Templates" class="headerlink" title="Custom Postfix Templates"></a>Custom Postfix Templates</h3><p>IDEA的后缀自动完成功能特别好用,比如写一个表达式可以通过接一个.var自动声明变量.这个插件提供了非常多的后缀模板,而且支持在线更新,功能非常丰富,支持多种编程语言..toString,toInt,toLong….</p>
+<p><a href="https://plugins.jetbrains.com/plugin/9862-custom-postfix-templates">Custom Postfix Templates - Plugins | JetBrains</a></p>
+<h3 id="Free-Mybatis-Plugin"><a href="#Free-Mybatis-Plugin" class="headerlink" title="Free Mybatis Plugin"></a>Free Mybatis Plugin</h3><p>mybatis插件的免费支持框架,提供xml mapper代码检查和导航等功能.这个免费插件的功能对我而言够用了.还有个收费的MbatisPlugin,功能更丰富,但是我没有特别强的需求用不上.</p>
+<p>另外再次推荐一个Myabtis的扩展框架<a href="https://mybatis.plus/">MybatisPlus</a>非常好用.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/8321-free-mybatis-plugin">Free MyBatis plugin - Plugins | JetBrains</a></p>
+<h3 id="Mybatis-Log-Plugin"><a href="#Mybatis-Log-Plugin" class="headerlink" title="Mybatis Log Plugin"></a>Mybatis Log Plugin</h3><p>将myabtis输出的日志整理成更易读的形式进行输出,在调试sql语句的时候还挺有用的.个人用的不是很多.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/10065-mybatis-log-plugin">MyBatis Log Plugin - Plugins | JetBrains</a></p>
+<h3 id="Grep-Console"><a href="#Grep-Console" class="headerlink" title="Grep Console"></a>Grep Console</h3><p>对控制台输出的日志按日志级别进行高亮,可以进行很多自定义,我用的比较简单,安装之后就使用了默认配置.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/7125-grep-console">Grep Console - Plugins | JetBrains</a></p>
+<h3 id="BashSupport"><a href="#BashSupport" class="headerlink" title="BashSupport"></a>BashSupport</h3><p>编写bash标本的辅助工具.个人不怎么常用,偶尔用来看一下别人写的脚本,有语法高亮.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/4230-bashsupport">BashSupport - Plugins | JetBrains</a></p>
+<h3 id="HotSwapAgent"><a href="#HotSwapAgent" class="headerlink" title="HotSwapAgent"></a>HotSwapAgent</h3><p>JVM原有的HotSwap功能可以在类型和方法定义未变更的情况下对类进行重加载,在调试时非常有用.这个插件可以支持类型变更比如添加属性,方法之后进行重加载,也提供了一些框架的支持,有一定效果,但是支持不完善.用得不多.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/9552-hotswapagent">HotSwapAgent - Plugins | JetBrains</a></p>
+<h3 id="Key-Promoter-X"><a href="#Key-Promoter-X" class="headerlink" title="Key Promoter X"></a>Key Promoter X</h3><p>利用这个插件来熟悉IDEA的快捷键,每当你用鼠标单击UI上的功能按钮的时候,这个插件会通过右下角的气泡消息提示你对应的快捷键是什么.还会统计次数.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/9792-key-promoter-x">Key Promoter X - Plugins | JetBrains</a></p>
+<h3 id="Kotlin-Sequence-Debugger"><a href="#Kotlin-Sequence-Debugger" class="headerlink" title="Kotlin Sequence Debugger"></a>Kotlin Sequence Debugger</h3><p>提供类型Java Stream Debugger的功能,在调试的时候可以针对<code>.filter&#123;&#125;.foreach&#123;&#125;</code>这样的代码进行调试,对每一步操作提供详细的视图,Java8和kotlin的用户强烈建议使用这个插件.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/10301-kotlin-sequence-debugger">Kotlin Sequence Debugger - Plugins | JetBrains</a></p>
+<h3 id="MetricsReloaded"><a href="#MetricsReloaded" class="headerlink" title="MetricsReloaded"></a>MetricsReloaded</h3><p>提供了各种算法来评估代码的复杂度,对代码质量评估有帮助.关注代码质量的用户请一定试用一下.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/93-metricsreloaded">MetricsReloaded - Plugins | JetBrains</a></p>
+<h3 id="Rainbow-Brackets"><a href="#Rainbow-Brackets" class="headerlink" title="Rainbow Brackets"></a>Rainbow Brackets</h3><p>增强的括号匹配插件,将配对的括号标记成各种各样的颜色,配色非常好看.对代码阅读有一定帮助.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/10080-rainbow-brackets">Rainbow Brackets - Plugins | JetBrains</a></p>
+<h3 id="Translation"><a href="#Translation" class="headerlink" title="Translation"></a>Translation</h3><p>最近才安装的插件,利用Google,有道或百度的API将翻译功能集成到IDE里面,英文不是很好的朋友建议安装.翻译个单词,找个变量名什么的还是挺方便的.</p>
+<p>不过使用GoogleApi需要翻墙,有道和百度需要申请应用开发者账号,而且可能还要被收费.</p>
+<p><a href="https://plugins.jetbrains.com/plugin/8579-translation">Translation - Plugins | JetBrains</a></p>
+<h3 id="Settings-Repository"><a href="#Settings-Repository" class="headerlink" title="Settings Repository"></a>Settings Repository</h3><p>这个插件是自带的,开启之后可以将IDEA的配置同步到git仓库(比如github).</p>
+<p>使用说明再次<a href="https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#settings-repository">https://www.jetbrains.com/help/idea/sharing-your-ide-settings.html#settings-repository</a></p>
+<p>最后附上我的IDEA配置仓库: </p>
+<p>GitHub仓库主页:  <a href="https://github.com/hadix-lin/idea-setting">https://github.com/hadix-lin/idea-setting</a></p>
+<p>仓库地址: <a href="https://github.com/hadix-lin/idea-setting.git">https://github.com/hadix-lin/idea-setting.git</a></p>
 ]]></content>
       <tags>
-        <tag>coding</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Code Smell: Mutation : 突变</title>
-    <url>/2019/04/23/Mutation/</url>
-    <content><![CDATA[<h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
-<ul>
-<li>类的字段导致对象状态是可变的</li>
-<li>方法的参数&#x2F;局部变量可以重复赋值</li>
-<li>集合容器的内容可变</li>
-</ul>
-<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
-<h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>对变量不只一次赋值</li>
-<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
-<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
-<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
-<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
-</ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
-<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
-<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
-<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
-</ul>
-]]></content>
-      <tags>
-        <tag>coding</tag>
+        <tag>IDE</tag>
       </tags>
   </entry>
   <entry>
@@ -838,54 +886,6 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker network disconnect my-net my-nginx</span><br></pre></td></tr></table></figure>]]></content>
       <tags>
         <tag>docker</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>模块化工程</title>
-    <url>/2022/07/17/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B/</url>
-    <content><![CDATA[<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>人类对事物的认知过程是递归的。举个例子，我们如何识别一个物体是汽车，先看到一个物体，它有底盘、车架、外壳、内饰，看到这些我们觉得这可能是汽车，也可能知识汽车的模型。再打开机盖能看到发动机、变速箱，车底能看到车轮，我们进一步识别到这是一部真实的汽车。</p>
-<p><img src="https://blog-image-beijing.oss-cn-beijing.aliyuncs.com/img/%E6%A8%A1%E5%9D%97%E5%8C%96%E5%B7%A5%E7%A8%8B-%E6%A8%A1%E5%9D%97%E5%8C%96%E7%9A%84%E6%B1%BD%E8%BD%A6-20220717232151090.png" alt="模块化的汽车"></p>
-<p>随着我们一步步深入看到更多的汽车组成部分，我们便更确定这是一台汽车，这就是对一部汽车的递归认知过程。</p>
-<p>而对于天气，它是一个异常复杂的系统，我们很难直观的对其进行递归分析，这也是我们无法精准预测天气的原因。人类对事物的认知能力是有极限的。</p>
-<p>一辆汽车由数万个独立部件组成，很难说它不是个复杂系统，为什么我们可以很容易对它做递归分析。我们可以看到汽车是个高度模块化的系统，我们对它做递归分析的过程，实际上就是对其进行模块化拆解的过程。</p>
-<p>直接分析复杂系统很困难，但只要它能够拆解为独立的更小的模块，我们总能够将之拆解到一个简单系统层次，然后再去分析识别，最终实现对这个复杂系统的<strong>完全认知</strong>。</p>
-<blockquote>
-<p>一个系统越容易进行递归分析，我们越容易理解它，进一步，也越容易改造它。对于汽车如此，对于软件系统亦如是。</p>
-<p>软件工程的一个重要目标就是要令开发的软件系统更易扩展和维护，通过模块化方式构建一个系统，会令该系统易于理解，也就更容易实现这一目标。</p>
-</blockquote>
-<h2 id="额外的好处"><a href="#额外的好处" class="headerlink" title="额外的好处"></a>额外的好处</h2><p>除了令系统更容易被递归分析外，还具有以下好处：</p>
-<ol>
-<li>可重用：具备抽象良好接口的模块，可以很容易被重用，特别是基础组件。业务系统研发过程中，通过不断优化模块最终沉淀到最下层的模块通常与具体具体的业务语意无关了，自然而然就变成了可被重用的公共组件。</li>
-<li>可以灵活部署：不同的模块可以打包在一起部署，也可以利用SOA工具分布式部署。</li>
-<li>富有弹性：模块可以独立进行资源伸缩，提升整个系统的弹性。例如：汽车动力不足，可以加装一个发动机，实现四驱（这也是现在大部分电动车的四驱方案）。可以提供备胎，替换破损的轮胎。</li>
-</ol>
-<h2 id="模块化的障碍"><a href="#模块化的障碍" class="headerlink" title="模块化的障碍"></a>模块化的障碍</h2><ol>
-<li><p>循环依赖：</p>
-<p>如果两个模块间有循环依赖，那么当我们通过递归分析时将陷入无限递归，永远得不到结果。两个模块如果有循环依赖，那么他们是无法拆分的，实际上他们只能作为一个模块来使用。</p>
-</li>
-<li><p>封闭性不足：</p>
-<p>如果一个模块不仅开放有限的接口，那么它将可能被其他模块随意依赖，其自身难以被修改，因为它被迫与其他模块进行深度绑定，最终仅能作为其他模块的一部分存在。</p>
-<p>例如：如果车轮直接依赖变速箱齿轮进行传动，那么我们只能将变速箱和车轮安装在一起，可以想象这种结构是非常难加装转向装置的。</p>
-<blockquote>
-<p>实际上模块应当遵循所有SOLID原则。</p>
-<p>S：Single responsibility&#x2F;单一权责</p>
-<p>O：Open&#x2F;Closed&#x2F;开放封闭</p>
-<p>L：Liskov Substitution&#x2F;替换原则</p>
-<p>I：interface-segregation&#x2F;接口隔离</p>
-<p>D：Dependency inversion&#x2F;依赖反转</p>
-</blockquote>
-</li>
-<li><p>无法自我管理：</p>
-<p>如果一个模块无法管理自身的组件及其数据，那么它将不得不与能够管理这些的模块集成在一起。也就是说它必须与管理这些内容的组件集成在一起。</p>
-<p>例如：如果汽车内燃气燃烧室的大小必须由底盘决定，那么我们永远无法制造出可以安装在任意车辆中的发东西。</p>
-<blockquote>
-<p>模块提供的能力特性，必须由自身定义，而不取决于外部环境</p>
-</blockquote>
-</li>
-</ol>
-]]></content>
-      <tags>
-        <tag>架构</tag>
       </tags>
   </entry>
 </search>

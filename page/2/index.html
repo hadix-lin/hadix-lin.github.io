@@ -214,7 +214,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Multi-Responsibility-Methods/">
+    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Iteration/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -232,7 +232,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/04/23/Multi-Responsibility-Methods/" class="post-title-link" itemprop="url">Code Smell: Multi-Responsibility Methods : 多职责方法</a>
+          <a href="/2019/04/23/Iteration/" class="post-title-link" itemprop="url">Code Smell : Iteration : 迭代</a>
         </h2>
 
         <div class="post-meta-container">
@@ -250,7 +250,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2019-05-28 14:42:46" itemprop="dateModified" datetime="2019-05-28T14:42:46+08:00">2019-05-28</time>
+      <time title="Modified: 2019-05-28 14:42:38" itemprop="dateModified" datetime="2019-05-28T14:42:38+08:00">2019-05-28</time>
     </span>
 
   
@@ -263,21 +263,32 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当我们发现一个过长的方法时,通常会想要将之拆分为几个小方法.在某些情况下这非常容易,例如:一个很长的方法有很多参数,这些参数可以明显分为两组,一组只在方法的前一半使用,另一组在后一半使用.可以很明确地知道在什么位置将长方法拆成两个小方法.</p>
-<p>有类似这种表现的方法通常都具有多重职责,逻辑十分复杂.在上面的举例中,虽然可以很明确知道在什么位置将代码拆开,但是可能前半部分会有多个返回值,需要传递给后半部分.</p>
-<p>复杂的方法不仅逻辑很难理解,也很难重构,几乎不可能重用.后续的维护多半只能是重写.</p>
+          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>当你看到通过for循环或者streams-api遍历集合的代码时,需要明确知道迭代遍历是必须的(意味着对集合中的每个元素都进行了必要的逻辑处理).如果遍历一个数据结构总是为了从中查找某个值,那么最好将集合转换为Set或Map.这样做不仅可以令代码更简洁已读,而且还能提供更好的性能.</p>
+<p>每当选择使用一种数据结构时,都要考虑一下对该数据结构的<strong>更新(add&#x2F;update)<strong>或</strong>只读</strong>操作的频率,根据读写操作的占比和更新操作的类型来决定使用何种数据结构会更高效.举例来说:</p>
+<ul>
+<li>根据key寻找value当然是用Map</li>
+<li>检查value是否存在用Set</li>
+<li>使用索引进行随机写入使用ArrayList,顺序写入任意位置增删元素用LinkedList</li>
+<li>更多</li>
+</ul>
+<p>全部都是常识.</p>
 <h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>方法参数可以分组,分别在方法代码中不重合的段落中使用.例如三个用在前半部分,两个用在后半部分.</li>
-<li>Boolean类型的参数用来控制方法中某些代码块的开关.</li>
-<li>方法中的一部分只是用来计算一个值供另外一部分使用.</li>
+<li>使用for循环遍历列表来查找某个符合条件的值</li>
+<li>使用streams-api调用<code>findFirst/findAny/anyMatch</code></li>
 </ul>
-<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>将明显的代码块拆分为单独的方法(例如一个检查Boolean类型参数的if语句块)</li>
-<li>如果两个构造函数没有重合的参数,且非常复杂.那么可以将这个类拆分为两个单独的类.</li>
-</ul>
-<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> ValidatedField <span class="title function_">validateQuery</span><span class="params">(Class clazz, Mapper mapper, String propertyName, FilterOperator op,</span></span><br><span class="line"><span class="params">                                    Object val, <span class="type">boolean</span> validateNames, <span class="type">boolean</span> validateTypes)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">ValidatedField</span> <span class="variable">validatedField</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ValidatedField</span>(propertyName);</span><br><span class="line">    <span class="keyword">if</span> (!propertyName.startsWith(<span class="string">&quot;$&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">final</span> String[] pathElements = propertyName.split(<span class="string">&quot;\\.&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> List&lt;String&gt; databasePathElements = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(asList(pathElements));</span><br><span class="line">        <span class="keyword">if</span> (clazz == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> validatedField;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">MappedClass</span> <span class="variable">mc</span> <span class="operator">=</span> mapper.getMappedClass(clazz);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; ; ) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">String</span> <span class="variable">fieldName</span> <span class="operator">=</span> pathElements[i];</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">fieldIsArrayOperator</span> <span class="operator">=</span> fieldName.equals(<span class="string">&quot;$&quot;</span>);</span><br><span class="line">            <span class="keyword">final</span> Optional&lt;MappedField&gt; mf = getMappedField(fieldName, mc, databasePathElements,</span><br><span class="line">                                                            i, propertyName, validateNames,</span><br><span class="line">                                                            fieldIsArrayOperator);</span><br><span class="line">            validatedField.mappedField = mf;</span><br><span class="line"></span><br><span class="line">            i++;</span><br><span class="line">            <span class="keyword">if</span> (mf.isPresent() &amp;&amp; mf.get().isMap()) &#123;</span><br><span class="line">                <span class="comment">//skip the map key validation, and move to the next fieldName</span></span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (i &gt;= pathElements.length) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!fieldIsArrayOperator) &#123;</span><br><span class="line">                <span class="comment">//catch people trying to search/update into @Reference/@Serialized fields</span></span><br><span class="line">                <span class="keyword">if</span> (validateNames &amp;&amp; !canQueryPast(mf.get())) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;Cannot use dot-notation past &#x27;%s&#x27; in &#x27;%s&#x27;; found while validating - %s&quot;</span>,</span><br><span class="line">                             fieldName, mc.getClazz().getName(), propertyName));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!mf.isPresent() &amp;&amp; mc.isInterface()) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!mf.isPresent()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ValidationException</span>(</span><br><span class="line">                      format(<span class="string">&quot;The field &#x27;%s&#x27; could not be found in &#x27;%s&#x27;&quot;</span>, propertyName, </span><br><span class="line">                             mc.getClazz().getName()));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//get the next MappedClass for the next field validation</span></span><br><span class="line">                <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> mf.get();</span><br><span class="line">                mc = mapper.getMappedClass((mappedField.isSingleValue()) </span><br><span class="line">                                           ? mappedField.getType() </span><br><span class="line">                                           : mappedField.getSubClass());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//record new property string</span></span><br><span class="line">        validatedField.databasePath = databasePathElements.stream().collect(joining(<span class="string">&quot;.&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (validateTypes &amp;&amp; validatedField.mappedField.isPresent()) &#123;</span><br><span class="line">            <span class="type">MappedField</span> <span class="variable">mappedField</span> <span class="operator">=</span> validatedField.mappedField.get();</span><br><span class="line">            List&lt;ValidationFailure&gt; typeValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForType</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getType(), op, val, typeValidationFailures);</span><br><span class="line">            List&lt;ValidationFailure&gt; subclassValidationFailures = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">compatibleForSubclass</span> <span class="operator">=</span> isCompatibleForOperator(</span><br><span class="line">              mc, mappedField, mappedField.getSubClass(), op, val, subclassValidationFailures);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ((mappedField.isSingleValue() &amp;&amp; !compatibleForType)</span><br><span class="line">                 || mappedField.isMultipleValues() &amp;&amp; !(compatibleForSubclass || compatibleForType)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (LOG.isWarningEnabled()) &#123;</span><br><span class="line">                    LOG.warning(</span><br><span class="line">                      format(<span class="string">&quot;The type(s) for the query/update may be inconsistent; &quot;</span></span><br><span class="line">                             +<span class="string">&quot;using an instance of type &#x27;%s&#x27; for the field &#x27;%s.%s&#x27;&quot;</span></span><br><span class="line">                             +<span class="string">&quot; which is declared as &#x27;%s&#x27;&quot;</span>,</span><br><span class="line">                             val.getClass().getName(), mappedField.getDeclaringClass().getName(),</span><br><span class="line">                             mappedField.getJavaFieldName(), mappedField.getType().getName()));</span><br><span class="line">                    typeValidationFailures.addAll(subclassValidationFailures);</span><br><span class="line">                    LOG.warning(<span class="string">&quot;Validation warnings: \n&quot;</span> + typeValidationFailures);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> validatedField;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><ul>
+<li><p>如果总是通过for循环遍历来检查某个值是否存在于List,可以想想List中的元素是否唯一,如果是可以使用Set进行替换.</p>
+</li>
+<li><p>如果总是查找一个具有特定属性值的对象,可以考虑使用以属性值为key的Map进行替换,可以提升查找效率.</p>
+</li>
+<li><p>java.util.Collections API提供了非常多有用的方法,如果你无法变更数据结果,可以考虑看看看Collections中有没有方法可以替换循环迭代的代码.例如:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//代码片段1</span></span><br><span class="line"><span class="keyword">for</span> (String s : getLoadNames()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (storedName.equals(s)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以改为如下代码</span></span><br><span class="line"><span class="keyword">return</span> Collections.contains(getLoadNames,storedName);</span><br><span class="line"></span><br><span class="line"><span class="comment">//代码片段2</span></span><br><span class="line">Iterator&lt;String&gt; iter = getLoadNames().iterator();</span><br><span class="line"><span class="keyword">while</span>(iter.hasNext())&#123;</span><br><span class="line">  <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> iter.next();</span><br><span class="line">  <span class="keyword">if</span>(storedName.equals())&#123;</span><br><span class="line">    iter.remove();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以改为</span></span><br><span class="line">Collections.removeIf(name-&gt;storedName.equals(name))</span><br></pre></td></tr></table></figure>
 
-<p>第一步,观察11-48行,这段代码计算了<code>MapperClass mc</code>的值供后面的代码使用,可以拆解出来.</p>
+<p>示例代码中的转换,IntellijIdea IDE提供了快速识别转换的能力,通常在编辑器中会自动标注可以转换的代码,只需要按下Alt+Enter就可以快速转换为Collections API代码.</p>
+</li>
+<li><p>如果确实需要对数据结构进行遍历,最好将遍历代码封装的业务领域对象的方法中,然后给它起一个容易识别的名字.</p>
+</li>
+</ul>
 
       
     </div>
@@ -304,7 +315,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Mutation/">
+    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Too-Many-Problems/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -322,7 +333,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/04/23/Mutation/" class="post-title-link" itemprop="url">Code Smell: Mutation : 突变</a>
+          <a href="/2019/04/23/Too-Many-Problems/" class="post-title-link" itemprop="url">Code Smell : Too Many Problems : 太多的问题</a>
         </h2>
 
         <div class="post-meta-container">
@@ -340,7 +351,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2019-05-28 14:42:53" itemprop="dateModified" datetime="2019-05-28T14:42:53+08:00">2019-05-28</time>
+      <time title="Modified: 2019-05-28 14:43:07" itemprop="dateModified" datetime="2019-05-28T14:43:07+08:00">2019-05-28</time>
     </span>
 
   
@@ -353,25 +364,23 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
-<ul>
-<li>类的字段导致对象状态是可变的</li>
-<li>方法的参数&#x2F;局部变量可以重复赋值</li>
-<li>集合容器的内容可变</li>
-</ul>
-<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
+          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
+<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
+<ol>
+<li>将方法拆分多个相对更短的代码段</li>
+<li>针对每个方法处理异味,但一次仅针对一种异味</li>
+<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
+</ol>
 <h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>对变量不只一次赋值</li>
-<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
-<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
-<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
-<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
+<li>非常长或复杂的方法或类.</li>
+<li>当你大概流量代码时能够发现多种异味.</li>
+<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
 </ul>
 <h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
-<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
-<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
-<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
+<li>将代码拆分为多个段落</li>
+<li>一次仅尝试修复一种异味</li>
+<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
+<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
 </ul>
 
       
@@ -501,7 +510,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Too-Many-Problems/">
+    <link itemprop="mainEntityOfPage" href="https://hadix-lin.github.io/2019/04/23/Mutation/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -519,7 +528,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/04/23/Too-Many-Problems/" class="post-title-link" itemprop="url">Code Smell : Too Many Problems : 太多的问题</a>
+          <a href="/2019/04/23/Mutation/" class="post-title-link" itemprop="url">Code Smell: Mutation : 突变</a>
         </h2>
 
         <div class="post-meta-container">
@@ -537,7 +546,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2019-05-28 14:43:07" itemprop="dateModified" datetime="2019-05-28T14:43:07+08:00">2019-05-28</time>
+      <time title="Modified: 2019-05-28 14:42:53" itemprop="dateModified" datetime="2019-05-28T14:42:53+08:00">2019-05-28</time>
     </span>
 
   
@@ -550,23 +559,25 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>代码的异味有很多种,而且通常一份代码中会同时出现多种异味,要重构这样的代码是很难的.</p>
-<p>对这样的代码进行重构,通常可以通过以下三个步骤来</p>
-<ol>
-<li>将方法拆分多个相对更短的代码段</li>
-<li>针对每个方法处理异味,但一次仅针对一种异味</li>
-<li>重复前两步,如果前两部难以实施,考虑对你的代码要解决的问题进行重新建模</li>
-</ol>
+          <h2 id="问题概述"><a href="#问题概述" class="headerlink" title="问题概述"></a>问题概述</h2><p>在Java中,默认情况下很多东西是可变的.</p>
+<ul>
+<li>类的字段导致对象状态是可变的</li>
+<li>方法的参数&#x2F;局部变量可以重复赋值</li>
+<li>集合容器的内容可变</li>
+</ul>
+<p>这些可变性,导致方法的逻辑复杂性很难理解并限制了并发性.</p>
 <h2 id="症状"><a href="#症状" class="headerlink" title="症状"></a>症状</h2><ul>
-<li>非常长或复杂的方法或类.</li>
-<li>当你大概流量代码时能够发现多种异味.</li>
-<li>凭直觉就感觉到代码丑陋.(充满异味的代码通常给令读者心情糟糕)</li>
+<li>对变量不只一次赋值</li>
+<li>修改方法参数的状态(重新赋值,或修改对象内部状态)</li>
+<li>为改变参数内容而传递包装类型(例如:StringBuilder,可变的集合等等)</li>
+<li>由于代码中有多个原始类型变量被更新,导致很难做方法提取重构</li>
+<li>使用计数器或布尔类型变量跟踪分支代码的状态变更</li>
 </ul>
 <h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><ul>
-<li>将代码拆分为多个段落</li>
-<li>一次仅尝试修复一种异味</li>
-<li>引入新的业务领域对象来对代码段解决的问题进行建模</li>
-<li>提取出非常小的方法,并进行良好的命名.通过方法名来对代码进行文档化,如果方法名无法描述做了什么事儿,那么为方法补充一段注释是更好的.提取出方法+注释比直接在代码原地注释要更好,因为代码原地注释会拉长代码的篇幅,影响阅读体验.而IDE可以在任何引用该方法的位置通过快捷键快速读取良好格式化后的方法注释.</li>
+<li>如果代码在从一个集合或数组中读取内容的同时修改它,那最好使用另外一个数组或集合来跟踪变更的内容,保持原始的数组或集合内容不变.同时读写一个集合会导致意外的结果,并带来并发问题.</li>
+<li>如果很难解释一个变量的值是在哪个分支中被赋予的,那么最好用多个具有良好命名的变量,而不是重用同一个.又或者将变更变量的代码拆分为多个小方法,从而将变更限制在小段代码中.</li>
+<li>方法最好使用返回值来向调用者传递消息,而不是通过修改输入参数对象告知调用者自己的结果.如果需要传递的信息比较复杂,可以声明一个包装类来维护所有需要返回的信息.</li>
+<li>如果方法中使用了计数器或布尔类型变量来跟踪状态,那么最好将这类变量移动到合适的业务领域对象中,以便于方法可以进行简单的重构.</li>
 </ul>
 
       
